@@ -1,0 +1,13 @@
+---
+// src/pages/en/index.astro
+export const prerender = true;
+import { t } from '../../i18n/utils';
+const lang = 'en';
+---
+<html lang="en">
+  <head><title>{t(lang, 'meta.title')}</title></head>
+  <body>
+    <h1>{t(lang, 'hero.title')}</h1>
+    <p>{t(lang, 'hero.subtitle')}</p>
+  </body>
+</html>

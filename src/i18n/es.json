@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "services": "Servicios",
+    "packages": "Paquetes",
+    "contact": "Contacto",
+    "cities": "Ciudades",
+    "whatsapp": "WhatsApp",
+    "lang": "EN"
+  },
+  "hero": {
+    "title": "FLORES PARA LOS QUE SIEMPRE ESTÁN",
+    "subtitle": "Porque cuidar no depende de dónde estés. Con tu decisión, nosotros llegamos por ti.",
+    "cta_primary": "ELEGIR UN ARREGLO",
+    "cta_secondary": "HABLAR POR WHATSAPP",
+    "wa_message": "Hola, quisiera información sobre Flores en Paz"
+  },
+  "how": {
+    "title": "Cómo Funciona",
+    "step1_title": "Elige cementerio y fecha",
+    "step1_desc": "Nos dices cuándo y dónde",
+    "step2_title": "Elige el arreglo que quieras",
+    "step2_desc": "Desde un ramo simple hasta una suscripción",
+    "step3_title": "Nosotros llegamos por ti",
+    "step3_desc": "Con cuidado y respeto, nos encargamos de todo",
+    "step4_title": "Te hacemos llegar fotos y video",
+    "step4_desc": "Para que lo veas y lo compartas",
+    "cta": "HABLAR POR WHATSAPP",
+    "wa_message": "Hola, quiero saber cómo funciona el servicio"
+  },
+  "packages": {
+    "title": "Nuestros Paquetes",
+    "badge": "Más elegido",
+    "cta": "HABLAR POR WHATSAPP",
+    "wa_message_prefix": "Hola, me interesa el paquete",
+    "help": "¿No sabes cuál elegir? Escríbenos, te ayudamos.",
+    "wa_help": "Hola, no sé qué paquete elegir, ¿me pueden ayudar?"
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "q1": "¿Puedo incluir un mensaje personalizado?",
+    "a1": "Sí. En los paquetes Serenidad y Memoria Viva puedes incluir una tarjeta con el mensaje que quieras. Solo indícanoslo al momento de coordinar.",
+    "q2": "¿Cómo sé que realmente lo hicieron?",
+    "a2": "Recibirás fotos y/o video del servicio realizado, directamente por WhatsApp. Esa es nuestra promesa y nuestro diferencial.",
+    "q3": "¿Puedo pagar desde el extranjero?",
+    "a3": "Sí. Aceptamos PayPal, transferencias internacionales, Wise y tarjetas de crédito internacionales vía link de pago.",
+    "q4": "¿Qué flores colocan?",
+    "a4": "Trabajamos con flores frescas de temporada. Puedes pedirnos una flor específica y hacemos lo posible por conseguirla. En caso de no estar disponible, te consultamos antes.",
+    "q5": "¿Puedo programar visitas recurrentes?",
+    "a5": "Sí, con el paquete Memoria Viva tienes visitas mensuales o trimestrales programadas. Ideal si quieres una presencia constante sin preocuparte de recordarlo.",
+    "cta": "ESCRÍBENOS POR WHATSAPP",
+    "wa_message": "Hola, tengo una pregunta sobre el servicio"
+  },
+  "form": {
+    "title": "¿Listo para dar el paso?",
+    "subtitle": "Cuéntanos y te contactamos en menos de 24 horas.",
+    "name": "Nombre",
+    "whatsapp": "WhatsApp",
+    "city": "Ciudad del cementerio",
+    "city_lima": "Lima",
+    "city_trujillo": "Trujillo",
+    "city_arequipa": "Arequipa",
+    "city_other": "Otra",
+    "date": "Fecha deseada",
+    "package": "Paquete de interés",
+    "pkg_esencial": "Esencial",
+    "pkg_serenidad": "Serenidad",
+    "pkg_memoria": "Memoria Viva",
+    "submit": "SOLICITAR ATENCIÓN",
+    "success": "¡Listo! Te contactamos pronto por WhatsApp.",
+    "error": "Hubo un error. Por favor intenta de nuevo.",
+    "subscribe_title": "También puedes suscribirte para recibir recordatorios de fechas especiales",
+    "subscribe_email": "Tu email",
+    "subscribe_cta": "SUSCRIBIRME",
+    "subscribe_success": "¡Gracias! Te avisaremos en las fechas que importan.",
+    "subscribe_error": "Hubo un error. Por favor intenta de nuevo."
+  },
+  "footer": {
+    "tagline": "Porque cuidar no depende de dónde estés.",
+    "services": "Servicios",
+    "esencial": "Esencial",
+    "serenidad": "Serenidad",
+    "memoria": "Memoria Viva",
+    "cities": "Ciudades",
+    "lima": "Lima",
+    "trujillo": "Trujillo",
+    "arequipa": "Arequipa",
+    "legal": "Legal",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "contact": "Contacto",
+    "social": "Redes",
+    "payment_methods": "Métodos de pago",
+    "copyright": "© 2026 Flores en Paz · Lima, Perú"
+  },
+  "meta": {
+    "title": "Flores en Paz — Colocación de Flores en Cementerios de Lima, Trujillo y Arequipa",
+    "description": "Servicio de colocación de flores en cementerios. Tú decides, nosotros llegamos. Foto y video incluido. Lima, Trujillo, Arequipa."
+  }
+}
