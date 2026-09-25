@@ -1,0 +1,81 @@
+---
+// src/components/Subscribe.astro
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+---
+<div class="mt-16 pt-12 pb-24 border-t border-primary/10 max-w-xl mx-auto px-6 text-center">
+  <p class="font-body text-sm text-primary/60 mb-6">
+    {t(lang, 'form.subscribe_title')}
+  </p>
+  <form id="subscribe-form" class="flex gap-3 max-w-sm mx-auto" novalidate>
+    <label for="subscribe-email" class="sr-only">
+      {t(lang, 'form.subscribe_email')}
+    </label>
+    <input
+      type="email"
+      id="subscribe-email"
+      name="email"
+      required
+      placeholder={t(lang, 'form.subscribe_email')}
+      class="flex-1 border border-primary/20 rounded-lg px-4 py-3 font-body text-sm text-primary bg-white focus:outline-none focus:border-primary"
+    />
+    <button
+      type="submit"
+      id="subscribe-submit"
+      class="font-body font-bold text-xs tracking-widest text-primary underline decoration-1 underline-offset-4 px-4 hover:opacity-70 transition-opacity whitespace-nowrap cursor-pointer"
+    >
+      {t(lang, 'form.subscribe_cta')}
+    </button>
+  </form>
+  <p id="sub-success" class="hidden mt-4 font-body text-sm text-primary/70">
+    {t(lang, 'form.subscribe_success')}
+  </p>
+  <p id="sub-error" class="hidden mt-4 font-body text-sm text-red-600">
+    {t(lang, 'form.subscribe_error')}
+  </p>
+</div>
+
+<script>
+  const form = document.getElementById('subscribe-form') as HTMLFormElement | null;
+  const successMsg = document.getElementById('sub-success');
+  const errorMsg = document.getElementById('sub-error');
+  const submitBtn = document.getElementById('subscribe-submit') as HTMLButtonElement | null;
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const email = (fd.get('email') as string)?.trim() ?? '';
+    if (!email) {
+      successMsg?.classList.add('hidden');
+      errorMsg?.classList.remove('hidden');
+      return;
+    }
+
+    if (submitBtn) submitBtn.disabled = true;
+    successMsg?.classList.add('hidden');
+    errorMsg?.classList.add('hidden');
+
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (res.ok) {
+        successMsg?.classList.remove('hidden');
+        form.reset();
+      } else {
+        errorMsg?.classList.remove('hidden');
+      }
+    } catch {
+      errorMsg?.classList.remove('hidden');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
+</script>
