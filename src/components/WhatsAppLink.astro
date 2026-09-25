@@ -6,18 +6,25 @@ interface Props {
   message: string;
   text?: string;
   class?: string;
+  'aria-label'?: string;
+  [key: string]: any;
 }
-const { message, text, class: className = '' } = Astro.props;
+const { message, text, class: className = '', ...rest } = Astro.props;
 const href = waUrl(message);
+const hasSlot = Astro.slots.has('default');
+const baseClass = className.includes('no-underline')
+  ? 'cursor-pointer hover:opacity-80 transition-opacity'
+  : 'underline decoration-1 underline-offset-4 cursor-pointer hover:opacity-80 transition-opacity';
 ---
 <a
   href={href}
   target="_blank"
   rel="noopener noreferrer"
-  class={`underline decoration-1 underline-offset-4 cursor-pointer hover:opacity-80 transition-opacity ${className}`}
+  class={`${baseClass} ${className}`}
   data-wa-link
+  {...rest}
 >
-  <slot>{text}</slot>
+  {hasSlot ? <slot /> : text}
 </a>
 
 <script>

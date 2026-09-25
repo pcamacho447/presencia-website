@@ -1,0 +1,65 @@
+---
+// src/components/Footer.astro
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+---
+<footer class="bg-primary text-white py-16 px-6">
+  <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+    <!-- Columna 1: Marca -->
+    <div>
+      <p class="font-heading text-xl tracking-widest mb-3">FLORES EN PAZ</p>
+      <p class="font-body text-sm text-white/60 leading-relaxed">
+        {t(lang, 'footer.tagline')}
+      </p>
+    </div>
+
+    <!-- Columna 2: Servicios -->
+    <div>
+      <h4 class="font-body font-semibold text-xs tracking-widest uppercase mb-4 text-white/50">
+        {t(lang, 'footer.services')}
+      </h4>
+      <ul class="space-y-2 font-body text-sm text-white/70">
+        <li>{t(lang, 'footer.esencial')}</li>
+        <li>{t(lang, 'footer.serenidad')}</li>
+        <li>{t(lang, 'footer.memoria')}</li>
+      </ul>
+    </div>
+
+    <!-- Columna 3: Legal -->
+    <div>
+      <h4 class="font-body font-semibold text-xs tracking-widest uppercase mb-4 text-white/50">
+        {t(lang, 'footer.legal')}
+      </h4>
+      <ul class="space-y-2 font-body text-sm text-white/70">
+        <li><a href={`/${lang}/privacidad`} class="hover:text-white transition-colors">{t(lang, 'footer.privacy')}</a></li>
+        <li><a href={`/${lang}/terminos`} class="hover:text-white transition-colors">{t(lang, 'footer.terms')}</a></li>
+        <li><a href={`/${lang}/#contacto`} class="hover:text-white transition-colors">{t(lang, 'footer.contact')}</a></li>
+      </ul>
+    </div>
+
+    <!-- Columna 4: Redes + Pago -->
+    <div>
+      <h4 class="font-body font-semibold text-xs tracking-widest uppercase mb-4 text-white/50">
+        {t(lang, 'footer.social')}
+      </h4>
+      <ul class="space-y-2 font-body text-sm text-white/70 mb-6">
+        <li><a href="#" class="hover:text-white transition-colors">Instagram</a></li>
+        <li><a href="#" class="hover:text-white transition-colors">Facebook</a></li>
+        <li><a href="#" class="hover:text-white transition-colors">TikTok</a></li>
+      </ul>
+      <p class="font-body text-xs text-white/40 uppercase tracking-widest mb-2">
+        {t(lang, 'footer.payment_methods')}
+      </p>
+      <p class="font-body text-xs text-white/50">PayPal · Visa · Mastercard · Yape · Plin</p>
+    </div>
+  </div>
+
+  <!-- Copyright -->
+  <div class="max-w-6xl mx-auto mt-12 pt-8 border-t border-white/10">
+    <p class="font-body text-xs text-white/30 text-center">{t(lang, 'footer.copyright')}</p>
+  </div>
+</footer>

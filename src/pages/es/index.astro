@@ -8,6 +8,8 @@ import Packages from '../../components/Packages.astro';
 import FAQ from '../../components/FAQ.astro';
 import ContactForm from '../../components/ContactForm.astro';
 import Subscribe from '../../components/Subscribe.astro';
+import Footer from '../../components/Footer.astro';
+import WhatsAppFAB from '../../components/WhatsAppFAB.astro';
 import { t } from '../../i18n/utils';
 
 const lang = 'es';
@@ -28,4 +30,6 @@ const lang = 'es';
       <Subscribe lang={lang} />
     </section>
   </main>
+  <Footer lang={lang} />
+  <WhatsAppFAB lang={lang} />
 </Base>
