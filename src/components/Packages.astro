@@ -1,0 +1,99 @@
+---
+// src/components/Packages.astro
+import { load as parse } from 'js-yaml';
+import yamlContent from '../content/paquetes.yaml?raw';
+import WhatsAppLink from './WhatsAppLink.astro';
+import { t } from '../i18n/utils';
+
+interface Paquete {
+  id: string;
+  nombre: string;
+  destacado: boolean;
+  precio_sol: string;
+  precio_usd: string;
+  beneficios: string[];
+}
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+
+// Leer YAML en build time
+const data = parse(yamlContent) as { paquetes: Paquete[] };
+
+// Ordenar: SERENIDAD (destacado) siempre primero en el DOM
+const paquetes = [...data.paquetes].sort((a, b) => {
+  if (a.destacado && !b.destacado) return -1;
+  if (!a.destacado && b.destacado) return 1;
+  return 0;
+});
+---
+<section id="paquetes" class="py-24 bg-secondary">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="font-heading text-4xl text-primary text-center mb-16">
+      {t(lang, 'packages.title')}
+    </h2>
+
+    <!-- Cards: SERENIDAD primero en DOM, se reordenan en desktop con CSS -->
+    <div class="flex flex-col md:flex-row gap-6 justify-center">
+      {paquetes.map((pkg) => (
+        <div
+          class={`relative flex flex-col bg-white rounded-2xl p-8 flex-1 max-w-sm mx-auto md:mx-0 ${
+            pkg.destacado
+              ? 'border-2 border-primary shadow-xl md:scale-105'
+              : 'border border-primary/20 shadow-sm'
+          }`}
+        >
+          <!-- Badge "Más elegido" -->
+          {pkg.destacado && (
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span class="bg-primary text-white text-xs font-body font-bold px-4 py-1 rounded-full tracking-widest">
+                {t(lang, 'packages.badge')}
+              </span>
+            </div>
+          )}
+
+          <h3 class="font-heading text-2xl text-primary text-center mb-2 mt-2">
+            {pkg.nombre}
+          </h3>
+
+          <!-- Precio -->
+          <div class="text-center mb-6">
+            <span class="font-body font-bold text-3xl text-primary">S/ {pkg.precio_sol}</span>
+            <span class="font-body text-sm text-primary/50 ml-2">(~${pkg.precio_usd} USD)</span>
+          </div>
+
+          <!-- Beneficios -->
+          <ul class="space-y-3 mb-8 flex-1">
+            {pkg.beneficios.map((b) => (
+              <li class="flex items-start gap-2 font-body text-sm text-primary/80">
+                <span class="text-primary font-bold mt-0.5">✓</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+
+          <!-- CTA -->
+          <div class="text-center">
+            <WhatsAppLink
+              message={`${t(lang, 'packages.wa_message_prefix')} ${pkg.nombre}`}
+              text={t(lang, 'packages.cta')}
+              class="font-body font-semibold text-sm text-primary tracking-widest"
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Texto ayuda al final -->
+    <div class="text-center mt-12 font-body text-primary/70">
+      {t(lang, 'packages.help')}{' '}
+      <WhatsAppLink
+        message={t(lang, 'packages.wa_help')}
+        text="escríbenos"
+        class="text-primary"
+      />
+    </div>
+  </div>
+</section>

@@ -1,0 +1,35 @@
+# src/content/paquetes.yaml
+# Editado por Decap CMS — no modificar directamente
+
+paquetes:
+  - id: serenidad
+    nombre: SERENIDAD
+    destacado: true
+    precio_sol: "XX"
+    precio_usd: "XX"
+    beneficios:
+      - Flores frescas + colocación
+      - Foto + Video corto
+      - Confirmación por WhatsApp
+      - Tarjeta personalizada
+
+  - id: esencial
+    nombre: ESENCIAL
+    destacado: false
+    precio_sol: "XX"
+    precio_usd: "XX"
+    beneficios:
+      - Ramo de flores frescas
+      - Colocación en el lugar
+      - Foto digital de confirmación
+
+  - id: memoria
+    nombre: MEMORIA VIVA
+    destacado: false
+    precio_sol: "XX"
+    precio_usd: "XX/mes"
+    beneficios:
+      - Flores frescas en cada visita
+      - Foto y video en cada visita
+      - Recordatorios de fechas importantes
+      - Suscripción mensual o trimestral
