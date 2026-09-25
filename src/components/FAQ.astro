@@ -1,0 +1,108 @@
+---
+// src/components/FAQ.astro
+import WhatsAppLink from './WhatsAppLink.astro';
+import { t } from '../i18n/utils';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+
+const faqs = [1, 2, 3, 4, 5].map((n) => ({
+  q: t(lang, `faq.q${n}`),
+  a: t(lang, `faq.a${n}`),
+}));
+---
+<section id="faq" class="py-24 bg-white">
+  <div class="max-w-2xl mx-auto px-6">
+    <h2 class="font-heading text-4xl text-primary text-center mb-16">
+      {t(lang, 'faq.title')}
+    </h2>
+
+    <div class="space-y-2" id="faq-container">
+      {faqs.map((faq, i) => (
+        <div class="border-b border-primary/10">
+          <!-- Header del acordeón (min 44px de altura táctil) -->
+          <button
+            type="button"
+            class="faq-trigger w-full flex items-center justify-between py-5 px-2 min-h-[44px] text-left font-body font-semibold text-primary text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 cursor-pointer"
+            data-index={i}
+            aria-expanded="false"
+            aria-controls={`faq-answer-${i}`}
+            id={`faq-btn-${i}`}
+          >
+            <span>{faq.q}</span>
+            <span class="faq-icon ml-4 shrink-0 text-primary/50 text-xl leading-none select-none" aria-hidden="true">+</span>
+          </button>
+
+          <!-- Respuesta (oculta por defecto) -->
+          <div
+            id={`faq-answer-${i}`}
+            role="region"
+            aria-labelledby={`faq-btn-${i}`}
+            class="faq-answer overflow-hidden max-h-0 transition-all duration-300 ease-in-out"
+            data-index={i}
+          >
+            <p class="font-body text-sm text-primary/70 leading-relaxed pb-5 px-2">
+              {faq.a}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- CTA al final -->
+    <div class="text-center mt-12">
+      <WhatsAppLink
+        message={t(lang, 'faq.wa_message')}
+        text={t(lang, 'faq.cta')}
+        class="font-body font-semibold text-sm text-primary tracking-widest"
+      />
+    </div>
+  </div>
+</section>
+
+<script>
+  function setupFaq() {
+    const triggers = document.querySelectorAll<HTMLButtonElement>('.faq-trigger');
+    const answers = document.querySelectorAll<HTMLDivElement>('.faq-answer');
+
+    triggers.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = btn.dataset.index!;
+        const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+        // Cerrar todos
+        triggers.forEach((t) => {
+          t.setAttribute('aria-expanded', 'false');
+          const icon = t.querySelector('.faq-icon');
+          if (icon) icon.textContent = '+';
+        });
+        answers.forEach((a) => {
+          (a as HTMLElement).style.maxHeight = '0';
+        });
+
+        // Abrir el clickeado si estaba cerrado
+        if (!isOpen) {
+          btn.setAttribute('aria-expanded', 'true');
+          const icon = btn.querySelector('.faq-icon');
+          if (icon) icon.textContent = '−';
+          const answer = document.querySelector<HTMLDivElement>(
+            `.faq-answer[data-index="${idx}"]`
+          );
+          if (answer) {
+            answer.style.maxHeight = answer.scrollHeight + 'px';
+          }
+        }
+      });
+    });
+  }
+
+  // Inicializar en carga directa y navegación
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFaq);
+  } else {
+    setupFaq();
+  }
+  document.addEventListener('astro:page-load', setupFaq);
+</script>
