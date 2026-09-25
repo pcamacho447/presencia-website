@@ -1,0 +1,34 @@
+---
+// src/components/WhatsAppLink.astro
+import { waUrl } from '../config';
+
+interface Props {
+  message: string;
+  text?: string;
+  class?: string;
+}
+const { message, text, class: className = '' } = Astro.props;
+const href = waUrl(message);
+---
+<a
+  href={href}
+  target="_blank"
+  rel="noopener noreferrer"
+  class={`underline decoration-1 underline-offset-4 cursor-pointer hover:opacity-80 transition-opacity ${className}`}
+  data-wa-link
+>
+  <slot>{text}</slot>
+</a>
+
+<script>
+  // Dispara evento whatsapp_click a Cloudflare Web Analytics
+  document.querySelectorAll('[data-wa-link]').forEach((el) => {
+    el.addEventListener('click', () => {
+      // @ts-ignore
+      if (typeof window.cfBeacon !== 'undefined') {
+        // @ts-ignore
+        window.cfBeacon.push({ n: 'whatsapp_click' });
+      }
+    });
+  });
+</script>
