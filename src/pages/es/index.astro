@@ -1,9 +1,20 @@
 ---
 export const prerender = true;
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { t } from '../../i18n/utils';
+
+const lang = 'es';
 ---
-<html lang="es">
-  <head><title>Flores en Paz</title></head>
-  <body>
-    <h1 class="text-primary font-heading p-8" style="font-family: serif; padding: 2rem;">🌸 Flores en Paz — en construcción</h1>
-  </body>
-</html>
+<Base
+  lang={lang}
+  title={t(lang, 'meta.title')}
+  description={t(lang, 'meta.description')}
+>
+  <Header lang={lang} />
+  <main>
+    <div style="height: 200vh; background: #2b4c3b; display:flex; align-items:center; justify-content:center;">
+      <h1 style="color:white; font-family: serif;">Placeholder — Hero va aquí</h1>
+    </div>
+  </main>
+</Base>
