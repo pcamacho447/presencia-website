@@ -13,11 +13,15 @@ import WhatsAppFAB from '../../components/WhatsAppFAB.astro';
 import { t } from '../../i18n/utils';
 
 const lang = 'es';
+const siteUrl = 'https://tusitio.com'; // ← reemplazar con dominio real
 ---
 <Base
   lang={lang}
   title={t(lang, 'meta.title')}
   description={t(lang, 'meta.description')}
+  canonicalUrl={`${siteUrl}/es/`}
+  alternateEs={`${siteUrl}/es/`}
+  alternateEn={`${siteUrl}/en/`}
 >
   <Header lang={lang} />
   <main>

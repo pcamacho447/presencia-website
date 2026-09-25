@@ -12,6 +12,11 @@ paquetes:
       - Foto + Video corto
       - Confirmación por WhatsApp
       - Tarjeta personalizada
+    beneficios_en:
+      - Fresh flowers + placement
+      - Photo + short video
+      - WhatsApp confirmation
+      - Personalized card
 
   - id: esencial
     nombre: ESENCIAL
@@ -22,6 +27,10 @@ paquetes:
       - Ramo de flores frescas
       - Colocación en el lugar
       - Foto digital de confirmación
+    beneficios_en:
+      - Fresh flower bouquet
+      - On-site placement
+      - Digital confirmation photo
 
   - id: memoria
     nombre: MEMORIA VIVA
@@ -33,3 +42,8 @@ paquetes:
       - Foto y video en cada visita
       - Recordatorios de fechas importantes
       - Suscripción mensual o trimestral
+    beneficios_en:
+      - Fresh flowers on each visit
+      - Photo and video on each visit
+      - Reminders for important dates
+      - Monthly or quarterly subscription

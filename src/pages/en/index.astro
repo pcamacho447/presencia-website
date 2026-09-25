@@ -1,13 +1,40 @@
 ---
 // src/pages/en/index.astro
 export const prerender = true;
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Hero from '../../components/Hero.astro';
+import HowItWorks from '../../components/HowItWorks.astro';
+import Packages from '../../components/Packages.astro';
+import FAQ from '../../components/FAQ.astro';
+import ContactForm from '../../components/ContactForm.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import Footer from '../../components/Footer.astro';
+import WhatsAppFAB from '../../components/WhatsAppFAB.astro';
 import { t } from '../../i18n/utils';
+
 const lang = 'en';
+const siteUrl = 'https://tusitio.com'; // ← reemplazar con dominio real
 ---
-<html lang="en">
-  <head><title>{t(lang, 'meta.title')}</title></head>
-  <body>
-    <h1>{t(lang, 'hero.title')}</h1>
-    <p>{t(lang, 'hero.subtitle')}</p>
-  </body>
-</html>
+<Base
+  lang={lang}
+  title={t(lang, 'meta.title')}
+  description={t(lang, 'meta.description')}
+  canonicalUrl={`${siteUrl}/en/`}
+  alternateEs={`${siteUrl}/es/`}
+  alternateEn={`${siteUrl}/en/`}
+>
+  <Header lang={lang} />
+  <main>
+    <Hero lang={lang} />
+    <HowItWorks lang={lang} />
+    <Packages lang={lang} />
+    <FAQ lang={lang} />
+    <section class="bg-secondary">
+      <ContactForm lang={lang} />
+      <Subscribe lang={lang} />
+    </section>
+  </main>
+  <Footer lang={lang} />
+  <WhatsAppFAB lang={lang} />
+</Base>

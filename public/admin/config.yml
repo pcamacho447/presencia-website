@@ -30,6 +30,11 @@ collections:
                 label: Beneficios
                 widget: list
                 field: { name: item, label: Beneficio, widget: string }
+              - name: beneficios_en
+                label: Beneficios (Inglés)
+                widget: list
+                required: false
+                field: { name: item, label: Beneficio (EN), widget: string }
 
   - name: site
     label: Configuración del Sitio
