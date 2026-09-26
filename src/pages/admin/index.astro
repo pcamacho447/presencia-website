@@ -55,7 +55,14 @@ try {
       <h1 class="font-heading text-3xl font-bold tracking-wide">FLORES EN PAZ</h1>
       <p class="text-sm opacity-80">Panel de Control de Gestión Único</p>
     </div>
-    <a href="/es/" target="_blank" class="text-sm underline hover:opacity-80">Ver sitio web ↗</a>
+    <div class="flex items-center gap-4">
+      <a href="/es/" target="_blank" class="text-sm underline hover:opacity-80">Ver sitio web ↗</a>
+      <form method="POST" action="/api/admin/logout">
+        <button type="submit" class="text-sm bg-red-50 text-red-700 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 transition font-semibold">
+          Cerrar sesión
+        </button>
+      </form>
+    </div>
   </header>
 
   <!-- Navegación por pestañas -->
