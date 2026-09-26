@@ -1,0 +1,83 @@
+---
+// src/pages/admin/index.astro
+export const prerender = false;
+Astro.response.headers.set('X-Astro-Reroute', 'no');
+
+interface Lead {
+  id: string;
+}
+
+let leadCount = 0;
+try {
+  const url = new URL('/api/admin/leads', Astro.url.origin);
+  const res = await fetch(url.toString(), {
+    headers: { cookie: Astro.request.headers.get('cookie') || '' },
+  });
+  if (res.ok) {
+    const data = await res.json();
+    leadCount = Array.isArray(data) ? data.length : 0;
+  }
+} catch {}
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Administración · Flores en Paz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Raleway:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: '#2b4c3b', secondary: '#f5f3e9', whatsapp: '#25d366' },
+          fontFamily: { heading: ['Italiana', 'serif'], body: ['Raleway', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-secondary text-primary font-body min-h-screen p-4 md:p-8">
+  <header class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center pb-6 border-b border-primary/20 gap-4 mb-8">
+    <div>
+      <h1 class="font-heading text-3xl font-bold tracking-wide">FLORES EN PAZ</h1>
+      <p class="text-sm opacity-80">Panel de Administración de Contenidos y Solicitudes</p>
+    </div>
+    <a href="/es/" target="_blank" class="text-sm underline hover:opacity-80">Ver sitio web ↗</a>
+  </header>
+
+  <main class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Card Leads -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10 flex flex-col justify-between">
+      <div>
+        <div class="text-3xl mb-2">📋</div>
+        <h2 class="font-heading text-xl font-bold mb-1">Solicitudes de Clientes</h2>
+        <p class="text-sm opacity-70 mb-4">Revisa las solicitudes capturadas con enlace directo a WhatsApp.</p>
+        <div class="text-3xl font-bold text-primary mb-4">{leadCount} <span class="text-xs font-normal opacity-70">registrados</span></div>
+      </div>
+      <a href="/admin/leads" class="block text-center bg-primary text-white py-2 px-4 rounded-xl font-semibold hover:opacity-90 transition">Gestionar Leads →</a>
+    </div>
+
+    <!-- Card Paquetes -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10 flex flex-col justify-between">
+      <div>
+        <div class="text-3xl mb-2">💐</div>
+        <h2 class="font-heading text-xl font-bold mb-1">Paquetes y Precios</h2>
+        <p class="text-sm opacity-70 mb-4">Modifica precios en S/ y USD, beneficios y resalta el paquete principal.</p>
+      </div>
+      <a href="/admin/paquetes" class="block text-center bg-primary text-white py-2 px-4 rounded-xl font-semibold hover:opacity-90 transition">Editar Paquetes →</a>
+    </div>
+
+    <!-- Card Sitio & Hero -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10 flex flex-col justify-between">
+      <div>
+        <div class="text-3xl mb-2">🎬</div>
+        <h2 class="font-heading text-xl font-bold mb-1">Hero y Contenidos</h2>
+        <p class="text-sm opacity-70 mb-4">Edita los títulos bilingües del Hero y la URL del video de fondo.</p>
+      </div>
+      <a href="/admin/sitio" class="block text-center bg-primary text-white py-2 px-4 rounded-xl font-semibold hover:opacity-90 transition">Editar Sitio →</a>
+    </div>
+  </main>
+</body>
+</html>
