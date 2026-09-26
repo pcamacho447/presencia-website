@@ -1,0 +1,137 @@
+---
+// src/pages/admin/paquetes.astro
+export const prerender = false;
+Astro.response.headers.set('X-Astro-Reroute', 'no');
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Paquetes — Admin · Flores en Paz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Raleway:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script is:inline>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: '#2b4c3b', secondary: '#f5f3e9' },
+          fontFamily: { heading: ['Italiana', 'serif'], body: ['Raleway', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-secondary text-primary font-body min-h-screen p-4 md:p-8">
+  <div class="max-w-4xl mx-auto mb-6 flex justify-between items-center">
+    <a href="/admin/" class="text-sm underline hover:opacity-80">← Volver al Panel Admin</a>
+    <h1 class="font-heading text-2xl font-bold">Gestión de Paquetes y Precios</h1>
+  </div>
+
+  <main class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
+    <div id="loading" class="text-center py-8">Cargando paquetes desde Supabase...</div>
+    <form id="paquetes-form" class="hidden space-y-8">
+      <div id="paquetes-container" class="space-y-8"></div>
+      
+      <div class="flex items-center justify-between pt-6 border-t border-primary/10">
+        <div id="msg" class="text-sm font-semibold"></div>
+        <button type="submit" id="save-btn" class="bg-primary text-white py-3 px-8 rounded-xl font-bold hover:opacity-90 transition">
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <script is:inline>
+    let currentData = [];
+
+    async function loadData() {
+      const loading = document.getElementById('loading');
+      const form = document.getElementById('paquetes-form');
+
+      try {
+        const res = await fetch('/api/admin/config?key=paquetes');
+        if (res.ok) {
+          currentData = await res.json() || [];
+          renderForm(currentData);
+          loading.classList.add('hidden');
+          form.classList.remove('hidden');
+        }
+      } catch (err) {
+        if (loading) loading.textContent = 'Error al cargar paquetes.';
+      }
+    }
+
+    function renderForm(list) {
+      const container = document.getElementById('paquetes-container');
+      if (!container) return;
+      container.innerHTML = list.map((p, idx) => `
+        <div class="p-6 border border-primary/10 rounded-xl bg-secondary/30 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-heading text-xl font-bold">${p.nombre}</h3>
+            <label class="flex items-center space-x-2 text-sm cursor-pointer">
+              <input type="checkbox" name="destacado_${idx}" ${p.destacado ? 'checked' : ''} class="w-4 h-4 text-primary rounded">
+              <span>Marcar como destacado ("Más elegido")</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold mb-1">Precio Soles (S/)</label>
+              <input type="text" name="precio_sol_${idx}" value="${p.precio_sol || ''}" class="w-full p-2 border border-primary/20 rounded-lg text-sm" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1">Precio Referencial (USD)</label>
+              <input type="text" name="precio_usd_${idx}" value="${p.precio_usd || ''}" class="w-full p-2 border border-primary/20 rounded-lg text-sm" required>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('paquetes-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg');
+      const saveBtn = document.getElementById('save-btn');
+      if (saveBtn) saveBtn.disabled = true;
+      if (msg) {
+        msg.className = 'text-sm font-semibold text-primary';
+        msg.textContent = 'Guardando...';
+      }
+
+      const form = e.target;
+      const updated = currentData.map((p, idx) => {
+        const destacado = form[`destacado_${idx}`]?.checked ?? false;
+        const precio_sol = form[`precio_sol_${idx}`]?.value ?? '';
+        const precio_usd = form[`precio_usd_${idx}`]?.value ?? '';
+        return { ...p, destacado, precio_sol, precio_usd };
+      });
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'paquetes', value: updated })
+        });
+        if (res.ok) {
+          if (msg) {
+            msg.className = 'text-sm font-semibold text-green-700';
+            msg.textContent = '¡Paquetes actualizados correctamente!';
+          }
+        } else {
+          throw new Error();
+        }
+      } catch {
+        if (msg) {
+          msg.className = 'text-sm font-semibold text-red-600';
+          msg.textContent = 'Error al guardar cambios.';
+        }
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    });
+
+    loadData();
+  </script>
+</body>
+</html>
