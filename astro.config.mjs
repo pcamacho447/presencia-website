@@ -5,6 +5,9 @@ import tailwind from '@astrojs/tailwind';
 export default defineConfig({
   output: 'hybrid',
   adapter: cloudflare(),
+  redirects: {
+    '/admin': '/admin/index.html',
+  },
   integrations: [tailwind()],
   i18n: {
     defaultLocale: 'es',
