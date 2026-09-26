@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "presencia-web",
+  "name": "presencia-website",
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2026-09-25",
   "compatibility_flags": [
