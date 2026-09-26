@@ -4,20 +4,30 @@ export const prerender = false;
 Astro.response.headers.set('X-Astro-Reroute', 'no');
 
 interface Lead {
-  id: string;
+  nombre: string;
+  whatsapp: string;
+  ciudad: string;
+  paquete: string;
+  fecha_deseada: string | null;
+  created_at: string;
 }
 
-let leadCount = 0;
+let leads: Lead[] = [];
+let loadError = false;
+
 try {
   const url = new URL('/api/admin/leads', Astro.url.origin);
   const res = await fetch(url.toString(), {
     headers: { cookie: Astro.request.headers.get('cookie') || '' },
   });
   if (res.ok) {
-    const data = await res.json();
-    leadCount = Array.isArray(data) ? data.length : 0;
+    leads = await res.json();
+  } else {
+    loadError = true;
   }
-} catch {}
+} catch {
+  loadError = true;
+}
 ---
 <!DOCTYPE html>
 <html lang="es">
@@ -27,7 +37,7 @@ try {
   <title>Panel de Administración · Flores en Paz</title>
   <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Raleway:wght@400;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+  <script is:inline>
     tailwind.config = {
       theme: {
         extend: {
@@ -39,45 +49,332 @@ try {
   </script>
 </head>
 <body class="bg-secondary text-primary font-body min-h-screen p-4 md:p-8">
-  <header class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center pb-6 border-b border-primary/20 gap-4 mb-8">
+  <!-- Header principal -->
+  <header class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center pb-6 border-b border-primary/20 gap-4 mb-6">
     <div>
       <h1 class="font-heading text-3xl font-bold tracking-wide">FLORES EN PAZ</h1>
-      <p class="text-sm opacity-80">Panel de Administración de Contenidos y Solicitudes</p>
+      <p class="text-sm opacity-80">Panel de Control de Gestión Único</p>
     </div>
     <a href="/es/" target="_blank" class="text-sm underline hover:opacity-80">Ver sitio web ↗</a>
   </header>
 
-  <main class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-    <!-- Card Leads -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10 flex flex-col justify-between">
-      <div>
-        <div class="text-3xl mb-2">📋</div>
-        <h2 class="font-heading text-xl font-bold mb-1">Solicitudes de Clientes</h2>
-        <p class="text-sm opacity-70 mb-4">Revisa las solicitudes capturadas con enlace directo a WhatsApp.</p>
-        <div class="text-3xl font-bold text-primary mb-4">{leadCount} <span class="text-xs font-normal opacity-70">registrados</span></div>
-      </div>
-      <a href="/admin/leads" class="block text-center bg-primary text-white py-2 px-4 rounded-xl font-semibold hover:opacity-90 transition">Gestionar Leads →</a>
-    </div>
+  <!-- Navegación por pestañas -->
+  <div class="max-w-5xl mx-auto mb-6 flex flex-wrap gap-2 border-b border-primary/10 pb-4">
+    <button
+      id="tab-btn-leads"
+      onclick="switchTab('leads')"
+      class="tab-btn active bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 shadow-sm"
+    >
+      📋 Solicitudes de Clientes ({leads.length})
+    </button>
+    <button
+      id="tab-btn-paquetes"
+      onclick="switchTab('paquetes')"
+      class="tab-btn bg-white text-primary border border-primary/20 px-5 py-2.5 rounded-xl text-sm font-semibold transition hover:bg-primary/5"
+    >
+      💐 Paquetes y Precios
+    </button>
+    <button
+      id="tab-btn-sitio"
+      onclick="switchTab('sitio')"
+      class="tab-btn bg-white text-primary border border-primary/20 px-5 py-2.5 rounded-xl text-sm font-semibold transition hover:bg-primary/5"
+    >
+      🎬 Hero y Contenidos
+    </button>
+  </div>
 
-    <!-- Card Paquetes -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10 flex flex-col justify-between">
-      <div>
-        <div class="text-3xl mb-2">💐</div>
-        <h2 class="font-heading text-xl font-bold mb-1">Paquetes y Precios</h2>
-        <p class="text-sm opacity-70 mb-4">Modifica precios en S/ y USD, beneficios y resalta el paquete principal.</p>
-      </div>
-      <a href="/admin/paquetes" class="block text-center bg-primary text-white py-2 px-4 rounded-xl font-semibold hover:opacity-90 transition">Editar Paquetes →</a>
-    </div>
+  <!-- Contenedor Principal -->
+  <main class="max-w-5xl mx-auto">
+    <!-- Pestaña 1: Solicitudes (Leads) -->
+    <section id="tab-content-leads" class="tab-content block">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="font-heading text-2xl font-bold">Solicitudes Recibidas</h2>
+          <button onclick="location.reload()" class="text-xs bg-secondary text-primary px-3 py-1.5 rounded-lg border border-primary/10 hover:bg-primary/10">
+            🔄 Actualizar
+          </button>
+        </div>
 
-    <!-- Card Sitio & Hero -->
-    <div class="bg-white p-6 rounded-2xl shadow-sm border border-primary/10 flex flex-col justify-between">
-      <div>
-        <div class="text-3xl mb-2">🎬</div>
-        <h2 class="font-heading text-xl font-bold mb-1">Hero y Contenidos</h2>
-        <p class="text-sm opacity-70 mb-4">Edita los títulos bilingües del Hero y la URL del video de fondo.</p>
+        {loadError && (
+          <p class="text-center py-8 text-red-600 font-semibold">Error al cargar las solicitudes desde la base de datos.</p>
+        )}
+
+        {!loadError && leads.length === 0 && (
+          <div class="text-center py-12 text-primary/60 italic">
+            Aún no hay solicitudes registradas de clientes.
+          </div>
+        )}
+
+        {!loadError && leads.length > 0 && (
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr class="bg-primary text-white text-xs uppercase tracking-wider">
+                  <th class="p-3 rounded-l-lg">Fecha</th>
+                  <th class="p-3">Nombre</th>
+                  <th class="p-3">WhatsApp</th>
+                  <th class="p-3">Ciudad</th>
+                  <th class="p-3">Paquete</th>
+                  <th class="p-3 rounded-r-lg">Fecha Deseada</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-primary/10">
+                {leads.map((lead) => (
+                  <tr class="hover:bg-secondary/40 transition">
+                    <td class="p-3 opacity-70 text-xs">{lead.created_at ? new Date(lead.created_at).toLocaleDateString('es-PE') : '—'}</td>
+                    <td class="p-3 font-semibold">{lead.nombre}</td>
+                    <td class="p-3">
+                      <a
+                        href={`https://wa.me/${(lead.whatsapp || '').replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1.5 bg-whatsapp/10 text-emerald-700 px-2.5 py-1 rounded-lg font-bold hover:bg-whatsapp/20 transition"
+                      >
+                        💬 {lead.whatsapp}
+                      </a>
+                    </td>
+                    <td class="p-3">{lead.ciudad || '—'}</td>
+                    <td class="p-3">
+                      <span class="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                        {lead.paquete || 'General'}
+                      </span>
+                    </td>
+                    <td class="p-3 opacity-80">{lead.fecha_deseada || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      <a href="/admin/sitio" class="block text-center bg-primary text-white py-2 px-4 rounded-xl font-semibold hover:opacity-90 transition">Editar Sitio →</a>
-    </div>
+    </section>
+
+    <!-- Pestaña 2: Paquetes y Precios -->
+    <section id="tab-content-paquetes" class="tab-content hidden">
+      <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
+        <h2 class="font-heading text-2xl font-bold mb-4">Edición de Paquetes y Precios</h2>
+        <div id="loading-paquetes" class="text-center py-8 opacity-70">Cargando paquetes desde Supabase...</div>
+        
+        <form id="paquetes-form" class="hidden space-y-8">
+          <div id="paquetes-container" class="space-y-6"></div>
+          
+          <div class="flex items-center justify-between pt-6 border-t border-primary/10">
+            <div id="msg-paquetes" class="text-sm font-semibold"></div>
+            <button type="submit" id="save-paquetes-btn" class="bg-primary text-white py-3 px-8 rounded-xl font-bold hover:opacity-90 transition shadow-sm">
+              Guardar Cambios de Paquetes
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Pestaña 3: Hero y Contenidos -->
+    <section id="tab-content-sitio" class="tab-content hidden">
+      <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
+        <h2 class="font-heading text-2xl font-bold mb-4">Edición de Hero y Contenidos Bilingües</h2>
+        <div id="loading-sitio" class="text-center py-8 opacity-70">Cargando configuración del sitio...</div>
+
+        <form id="sitio-form" class="hidden space-y-6">
+          <div>
+            <label class="block text-sm font-bold mb-1">URL del Video de Fondo (Hero)</label>
+            <input type="text" id="video_url" class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary" required />
+            <p class="text-xs opacity-70 mt-1">Ruta pública del archivo de video (ejemplo: /videos/hero.mp4)</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-bold mb-1">Título Hero (Español)</label>
+              <textarea id="title_es" rows="3" class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary" required></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-1">Título Hero (Inglés)</label>
+              <textarea id="title_en" rows="3" class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary" required></textarea>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-bold mb-1">Subtítulo Hero (Español)</label>
+              <textarea id="subtitle_es" rows="4" class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary" required></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-1">Subtítulo Hero (Inglés)</label>
+              <textarea id="subtitle_en" rows="4" class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary" required></textarea>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-6 border-t border-primary/10">
+            <div id="msg-sitio" class="text-sm font-semibold"></div>
+            <button type="submit" id="save-sitio-btn" class="bg-primary text-white py-3 px-8 rounded-xl font-bold hover:opacity-90 transition shadow-sm">
+              Guardar Cambios del Sitio
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   </main>
+
+  <script is:inline>
+    // Gestión de Pestañas
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('bg-primary', 'text-white');
+        el.classList.add('bg-white', 'text-primary');
+      });
+
+      const activeContent = document.getElementById('tab-content-' + tabName);
+      const activeBtn = document.getElementById('tab-btn-' + tabName);
+
+      if (activeContent) activeContent.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-primary');
+        activeBtn.classList.add('bg-primary', 'text-white');
+      }
+
+      if (tabName === 'paquetes' && !window.paquetesLoaded) {
+        loadPaquetes();
+      }
+      if (tabName === 'sitio' && !window.sitioLoaded) {
+        loadSitio();
+      }
+    }
+
+    // Lógica Paquetes
+    let currentPaquetes = [];
+    async function loadPaquetes() {
+      const loading = document.getElementById('loading-paquetes');
+      const form = document.getElementById('paquetes-form');
+      try {
+        const res = await fetch('/api/admin/config?key=paquetes');
+        if (res.ok) {
+          currentPaquetes = await res.json() || [];
+          renderPaquetesForm(currentPaquetes);
+          loading.classList.add('hidden');
+          form.classList.remove('hidden');
+          window.paquetesLoaded = true;
+        }
+      } catch {
+        loading.textContent = 'Error al cargar los paquetes.';
+      }
+    }
+
+    function renderPaquetesForm(list) {
+      const container = document.getElementById('paquetes-container');
+      container.innerHTML = list.map((p, idx) => `
+        <div class="p-6 border border-primary/10 rounded-xl bg-secondary/30 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-heading text-xl font-bold text-primary">${p.nombre}</h3>
+            <label class="flex items-center space-x-2 text-sm cursor-pointer">
+              <input type="checkbox" name="destacado_${idx}" ${p.destacado ? 'checked' : ''} class="w-4 h-4 accent-primary">
+              <span class="font-semibold text-primary">Marcar como destacado ("Más elegido")</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold mb-1">Precio Soles (S/)</label>
+              <input type="text" name="precio_sol_${idx}" value="${p.precio_sol || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1">Precio Referencial (USD)</label>
+              <input type="text" name="precio_usd_${idx}" value="${p.precio_usd || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('paquetes-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg-paquetes');
+      const btn = document.getElementById('save-paquetes-btn');
+      btn.disabled = true;
+      msg.textContent = 'Guardando...';
+
+      const updated = currentPaquetes.map((p, idx) => ({
+        ...p,
+        destacado: e.target[`destacado_${idx}`].checked,
+        precio_sol: e.target[`precio_sol_${idx}`].value,
+        precio_usd: e.target[`precio_usd_${idx}`].value,
+      }));
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'paquetes', value: updated })
+        });
+        if (res.ok) {
+          msg.className = 'text-sm font-semibold text-emerald-700';
+          msg.textContent = '¡Paquetes actualizados correctamente en Supabase!';
+        } else {
+          throw new Error();
+        }
+      } catch {
+        msg.className = 'text-sm font-semibold text-red-600';
+        msg.textContent = 'Error al guardar cambios.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Lógica Sitio
+    async function loadSitio() {
+      const loading = document.getElementById('loading-sitio');
+      const form = document.getElementById('sitio-form');
+      try {
+        const res = await fetch('/api/admin/config?key=hero');
+        if (res.ok) {
+          const data = await res.json() || {};
+          document.getElementById('video_url').value = data.video_url || '/videos/hero.mp4';
+          document.getElementById('title_es').value = data.title_es || '';
+          document.getElementById('title_en').value = data.title_en || '';
+          document.getElementById('subtitle_es').value = data.subtitle_es || '';
+          document.getElementById('subtitle_en').value = data.subtitle_en || '';
+          loading.classList.add('hidden');
+          form.classList.remove('hidden');
+          window.sitioLoaded = true;
+        }
+      } catch {
+        loading.textContent = 'Error al cargar la configuración.';
+      }
+    }
+
+    document.getElementById('sitio-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg-sitio');
+      const btn = document.getElementById('save-sitio-btn');
+      btn.disabled = true;
+      msg.textContent = 'Guardando...';
+
+      const payload = {
+        video_url: document.getElementById('video_url').value,
+        title_es: document.getElementById('title_es').value,
+        title_en: document.getElementById('title_en').value,
+        subtitle_es: document.getElementById('subtitle_es').value,
+        subtitle_en: document.getElementById('subtitle_en').value,
+      };
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'hero', value: payload })
+        });
+        if (res.ok) {
+          msg.className = 'text-sm font-semibold text-emerald-700';
+          msg.textContent = '¡Configuración del sitio guardada en Supabase!';
+        } else {
+          throw new Error();
+        }
+      } catch {
+        msg.className = 'text-sm font-semibold text-red-600';
+        msg.textContent = 'Error al guardar configuración.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
