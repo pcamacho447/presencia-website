@@ -1,0 +1,26 @@
+---
+// src/pages/admin/auth-callback.astro
+export const prerender = false;
+
+import { createSupabaseServerClient } from '../../lib/supabase';
+
+const code = Astro.url.searchParams.get('code');
+const error_description = Astro.url.searchParams.get('error_description');
+
+if (error_description) {
+  return Astro.redirect(`/admin/login?error=${encodeURIComponent(error_description)}`);
+}
+
+if (!code) {
+  return Astro.redirect('/admin/login');
+}
+
+const supabase = createSupabaseServerClient(Astro.cookies);
+const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+if (error) {
+  return Astro.redirect('/admin/login');
+}
+
+return Astro.redirect('/admin/');
+---
