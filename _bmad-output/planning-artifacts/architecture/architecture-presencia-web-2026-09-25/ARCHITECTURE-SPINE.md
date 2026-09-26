@@ -73,6 +73,37 @@ Ninguno — spine raíz, sin padre.
 **Prevents:** Dependencias de autenticación externa de GitHub OAuth, fallos de conexión en cliente y librerías externas de CMS de terceros.
 **Rule:** Endpoints `/api/admin/*` usan `SUPABASE_SERVICE_ROLE_KEY` del lado del servidor. Protección de acceso administrada nativamente o vía Cloudflare Access (Zero Trust).
 
+### AD-11 — Autenticación del Panel Admin: Supabase Auth + Magic Link
+
+**Binds:** El acceso a `/admin` y todas las sub-rutas bajo `/admin/*` y `/api/admin/*` requieren una sesión válida de Supabase Auth. El flujo de autenticación usa **Magic Link** enviado por email — sin contraseñas que almacenar ni gestionar.
+- La sesión se gestiona mediante una cookie `HttpOnly; Secure; SameSite=Lax` de corta duración, renovada silenciosamente por el cliente Supabase SSR.
+- Un middleware de Astro (`src/middleware.ts`) intercepta todas las peticiones a `/admin/*` y `/api/admin/*`, valida la sesión via `supabase.auth.getSession()`, y redirige a `/admin/login` si no existe sesión válida.
+- La página `/admin/login` presenta un formulario de Magic Link. No existe registro público — el email autorizado se configura directamente en el panel de Supabase Auth.
+- Los endpoints `/api/admin/*` devuelven HTTP 401 si no hay sesión válida, como segunda línea de defensa.
+
+**Prevents:** Acceso anónimo al panel de administración en producción. Contraseñas hardcodeadas. Cookies sin flags de seguridad.
+
+**Rule:**
+- Package: `@supabase/ssr` para gestión de sesión server-side en Cloudflare Workers.
+- `SUPABASE_URL` y `SUPABASE_ANON_KEY` son los únicos secrets necesarios para Auth.
+- `SUPABASE_SERVICE_ROLE_KEY` continúa siendo exclusivo de los endpoints de escritura a datos.
+- En desarrollo local se puede desactivar con `PUBLIC_SKIP_AUTH=true` en `.env.local`.
+
+### AD-12 — Security Headers HTTP
+
+**Binds:** El proyecto incluye un archivo `public/_headers` (Cloudflare Pages format) que inyecta cabeceras de seguridad HTTP en todas las respuestas.
+
+Cabeceras mínimas requeridas:
+- `X-Frame-Options: DENY`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- `Content-Security-Policy` con allowlist explícita de fuentes permitidas.
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+
+**Prevents:** Clickjacking, MIME sniffing, ataques XSS, framing externo del sitio.
+
+**Rule:** Las cabeceras se definen en `public/_headers` siguiendo la sintaxis de Cloudflare Pages. HSTS solo aplica en producción.
 
 ---
 
