@@ -15,7 +15,7 @@ collections:
     files:
       - name: paquetes
         label: Paquetes de servicio
-        file: src/content/paquetes.yaml
+        file: src/content/paquetes/paquetes.yaml
         fields:
           - name: paquetes
             label: Lista de paquetes
@@ -41,7 +41,7 @@ collections:
     files:
       - name: site
         label: Configuración general
-        file: src/content/site.yaml
+        file: src/content/site/site.yaml
         fields:
           - { name: hero_video, label: "URL del video Hero", widget: string }
           - { name: hero_title_es, label: "Título Hero (Español)", widget: string }
