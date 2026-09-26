@@ -10,9 +10,7 @@ export default defineConfig({
   image: {
     service: passthroughImageService(),
   },
-  redirects: {
-    '/admin': '/admin/index.html',
-  },
+
   integrations: [tailwind()],
   i18n: {
     defaultLocale: 'es',
