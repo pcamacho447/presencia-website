@@ -67,6 +67,13 @@ Ninguno — spine raíz, sin padre.
 **Binds:** `Italiana` para todos los headings (`h1`–`h4`). `Raleway` para body, párrafos, labels y CTAs. Ambas fuentes cargadas desde Google Fonts con `font-display: swap`.
 **Prevents:** Usar otras fuentes sin aprobación explícita.
 
+### AD-10 — Panel Admin Nativo en Astro + Supabase (reemplaza Decap CMS)
+**Binds:** Reemplazar la dependencia de Decap CMS y GitHub OAuth por un Panel de Administración 100% nativo dentro del proyecto en `/admin`, renderizado dinámicamente con Astro SSR (`export const prerender = false`) y respaldado por Supabase + Cloudflare Workers.
+- Sub-rutas: `/admin/leads` (gestión de solicitudes), `/admin/paquetes` (edición de paquetes y precios S/ y USD), `/admin/sitio` (textos bilingües y URL del video hero).
+**Prevents:** Dependencias de autenticación externa de GitHub OAuth, fallos de conexión en cliente y librerías externas de CMS de terceros.
+**Rule:** Endpoints `/api/admin/*` usan `SUPABASE_SERVICE_ROLE_KEY` del lado del servidor. Protección de acceso administrada nativamente o vía Cloudflare Access (Zero Trust).
+
+
 ---
 
 ## Deferred
