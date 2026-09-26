@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "^11.2.0",
     "@astrojs/tailwind": "^5.1.4",
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "@types/js-yaml": "^4.0.9",
     "astro": "^4.16.19",
