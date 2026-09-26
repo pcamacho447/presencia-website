@@ -1,0 +1,126 @@
+---
+// src/pages/admin/sitio.astro
+export const prerender = false;
+Astro.response.headers.set('X-Astro-Reroute', 'no');
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Sitio — Admin · Flores en Paz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Raleway:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script is:inline>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: '#2b4c3b', secondary: '#f5f3e9' },
+          fontFamily: { heading: ['Italiana', 'serif'], body: ['Raleway', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-secondary text-primary font-body min-h-screen p-4 md:p-8">
+  <div class="max-w-3xl mx-auto mb-6 flex justify-between items-center">
+    <a href="/admin/" class="text-sm underline hover:opacity-80">← Volver al Panel Admin</a>
+    <h1 class="font-heading text-2xl font-bold">Gestión de Hero y Contenidos</h1>
+  </div>
+
+  <main class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
+    <div id="loading" class="text-center py-8">Cargando configuración...</div>
+    <form id="sitio-form" class="hidden space-y-6">
+      <div>
+        <label class="block text-sm font-bold mb-1">URL del Video de Fondo (Hero)</label>
+        <input type="text" id="video_url" class="w-full p-3 border border-primary/20 rounded-xl text-sm" required>
+        <p class="text-xs opacity-70 mt-1">Ruta del archivo (ejemplo: /videos/hero.mp4 o URL pública CDN)</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold mb-1">Título Hero (Español)</label>
+          <textarea id="title_es" rows="3" class="w-full p-3 border border-primary/20 rounded-xl text-sm" required></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1">Título Hero (Inglés)</label>
+          <textarea id="title_en" rows="3" class="w-full p-3 border border-primary/20 rounded-xl text-sm" required></textarea>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold mb-1">Subtítulo Hero (Español)</label>
+          <textarea id="subtitle_es" rows="4" class="w-full p-3 border border-primary/20 rounded-xl text-sm" required></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-bold mb-1">Subtítulo Hero (Inglés)</label>
+          <textarea id="subtitle_en" rows="4" class="w-full p-3 border border-primary/20 rounded-xl text-sm" required></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-6 border-t border-primary/10">
+        <div id="msg" class="text-sm font-semibold"></div>
+        <button type="submit" id="save-btn" class="bg-primary text-white py-3 px-8 rounded-xl font-bold hover:opacity-90 transition">
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <script is:inline>
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/admin/config?key=hero');
+        if (res.ok) {
+          const data = await res.json() || {};
+          document.getElementById('video_url').value = data.video_url || '/videos/hero.mp4';
+          document.getElementById('title_es').value = data.title_es || '';
+          document.getElementById('title_en').value = data.title_en || '';
+          document.getElementById('subtitle_es').value = data.subtitle_es || '';
+          document.getElementById('subtitle_en').value = data.subtitle_en || '';
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('sitio-form').classList.remove('hidden');
+        }
+      } catch {}
+    }
+
+    document.getElementById('sitio-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg');
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      msg.textContent = 'Guardando...';
+
+      const payload = {
+        video_url: document.getElementById('video_url').value,
+        title_es: document.getElementById('title_es').value,
+        title_en: document.getElementById('title_en').value,
+        subtitle_es: document.getElementById('subtitle_es').value,
+        subtitle_en: document.getElementById('subtitle_en').value,
+      };
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'hero', value: payload })
+        });
+        if (res.ok) {
+          msg.className = 'text-sm font-semibold text-green-700';
+          msg.textContent = '¡Configuración del sitio guardada!';
+        } else {
+          throw new Error();
+        }
+      } catch {
+        msg.className = 'text-sm font-semibold text-red-600';
+        msg.textContent = 'Error al guardar configuración.';
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    loadConfig();
+  </script>
+</body>
+</html>
