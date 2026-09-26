@@ -1,10 +1,15 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, passthroughImageService } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   output: 'hybrid',
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    imageService: 'passthrough',
+  }),
+  image: {
+    service: passthroughImageService(),
+  },
   redirects: {
     '/admin': '/admin/index.html',
   },
