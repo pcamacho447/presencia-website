@@ -7,20 +7,28 @@ import { createSupabaseServerClient } from '../../lib/supabase';
 const code = Astro.url.searchParams.get('code');
 const error_description = Astro.url.searchParams.get('error_description');
 
+console.log('--- AUTH CALLBACK ACCESSED ---');
+console.log('URL Completa:', Astro.url.href);
+console.log('Code recibido:', code ? 'SÍ (oculto por seguridad)' : 'NO');
+console.log('Error description:', error_description);
+
 if (error_description) {
   return Astro.redirect(`/admin/login?error=${encodeURIComponent(error_description)}`);
 }
 
 if (!code) {
-  return Astro.redirect('/admin/login');
+  console.log('❌ Falló: No hay código en la URL.');
+  return Astro.redirect('/admin/login?error=no_code_in_url');
 }
 
-const supabase = createSupabaseServerClient(Astro.cookies);
+const supabase = createSupabaseServerClient(Astro.request, Astro.cookies);
 const { error } = await supabase.auth.exchangeCodeForSession(code);
 
 if (error) {
-  return Astro.redirect('/admin/login');
+  console.log('❌ Falló el exchangeCodeForSession:', error.message);
+  return Astro.redirect(`/admin/login?error=${encodeURIComponent(error.message)}`);
 }
 
+console.log('✅ Éxito: Sesión creada, redirigiendo al panel.');
 return Astro.redirect('/admin/');
 ---

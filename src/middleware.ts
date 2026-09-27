@@ -23,13 +23,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
+  console.log('MIDDLEWARE INTERCEPT:', pathname);
+
   // Rutas públicas de autenticación no necesitan guard
-  if (PUBLIC_ADMIN_PATHS.includes(pathname)) {
+  if (PUBLIC_ADMIN_PATHS.includes(pathname) || PUBLIC_ADMIN_PATHS.includes(pathname.replace(/\/$/, ''))) {
+    console.log('MIDDLEWARE BYPASS PUBLIC:', pathname);
     return next();
   }
 
   // Validar sesión
-  const supabase = createSupabaseServerClient(context.cookies);
+  const supabase = createSupabaseServerClient(context.request, context.cookies);
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
