@@ -1,123 +1,106 @@
-# 🌸 Flores en Paz — Presencia Web
+# Flores en Paz 🕊️ – Presencia Web
 
-> Landing page bilingüe (Español / Inglés) de alta conversión para servicio de colocación de flores en cementerios de Lima, Trujillo y Arequipa.
-
-[![Astro](https://img.shields.io/badge/Astro-4.x-FF5D01?logo=astro&logoColor=white)](https://astro.build)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages%20%26%20Workers-F38020?logo=cloudflare&logoColor=white)](https://pages.cloudflare.com)
-[![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Decap CMS](https://img.shields.io/badge/Decap%20CMS-3.x-FF007A?logo=decapcms&logoColor=white)](https://decapcms.org)
+Repositorio oficial del sitio web y panel de administración para "Flores en Paz", un servicio de arreglos florales fúnebres en Lima, Perú. Construido con tecnología moderna enfocada en altísima velocidad, SEO y facilidad de gestión para el negocio.
 
 ---
 
-## 📋 Tabla de Contenidos
-- [Características Principales](#-características-principales)
-- [Arquitectura y Stack Tecnológico](#-arquitectura-y-stack-tecnológico)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Requisitos Previos](#-requisitos-previos)
-- [Instalación y Desarrollo Local](#-instalación-y-desarrollo-local)
-- [Variables de Entorno](#-variables-de-entorno)
-- [Base de Datos (Supabase)](#-base-de-datos-supabase)
-- [Panel de Administración (Decap CMS & Leads)](#-panel-de-administración-decap-cms--leads)
-- [Despliegue a Producción (Cloudflare Pages)](#-despliegue-a-producción-cloudflare-pages)
+## 🏗️ Arquitectura del Sistema
 
----
+El proyecto utiliza una arquitectura **JAMstack Híbrida** con renderizado estático y serverless.
 
-## ✨ Características Principales
-
-- 📹 **Hero de Video Full Viewport (100vh)**: Video de fondo fluido con overlay al 40% de opacidad para garantizar contraste e legibilidad WCAG AA.
-- 📱 **Mobile-First & Responsividad Total**: Diseño adaptado para dispositivos móviles y escritorio.
-- 🌐 **Internacionalización Bilingüe (i18n)**: Rutas nativas `/es/` y `/en/` con cambio de idioma fluido, meta tags `hreflang` recíprocos y cero fugas de texto.
-- 💐 **Cards de Paquetes Dinámicas**: SERENIDAD posicionado como *"Más elegido"* en primer lugar del DOM para dispositivos móviles. Precios en Soles (S/) y equivalentes en USD.
-- 🗺️ **Timeline Horizontal "Cómo Funciona"**: Flujo visual de 4 pasos con conectores continuos y scroll horizontal en dispositivos móviles.
-- ❓ **FAQ Acordeón Single-Expand**: 5 preguntas frecuentes con comportamiento de apertura exclusiva de un solo ítem y área táctil accesible (≥44px).
-- 📝 **Captura de Leads y Suscripción**: Formulario de contacto de 5 campos y módulo independiente de suscripción de correo conectados a API Routes serverless en Supabase.
-- 🔒 **Vista Protegida `/admin/leads`**: Tabla administrativa SSR con acceso directo por WhatsApp (`wa.me`) para consultar las solicitudes recibidas sin ingresar al dashboard de Supabase.
-- ⚙️ **Panel Decap CMS (`/admin`)**: Administración del contenido (video Hero, textos bilingües y precios de paquetes) mediante archivos YAML respaldados en GitHub.
-- 📊 **Analytics Privado**: Tracking de clicks a WhatsApp (`whatsapp_click`) integrado nativamente con Cloudflare Web Analytics (sin cookies ni banners GDPR).
-
----
-
-## 🛠 Arquitectura y Stack Tecnológico
-
-- **Framework Frontend**: [Astro 4](https://astro.build) (Modo `output: 'hybrid'`)
+- **Framework**: [Astro 4](https://astro.build) (Modo Hybrid)
 - **Adaptador Edge**: `@astrojs/cloudflare`
 - **Estilos & Tipografías**: [Tailwind CSS 3](https://tailwindcss.com) + Google Fonts (*Italiana* para títulos y *Raleway* para cuerpo)
-- **Base de Datos**: [Supabase](https://supabase.com) (PostgreSQL + Row Level Security)
-- **API Runtime**: Cloudflare Workers (Astro API Routes Serverless)
-- **CMS**: Decap CMS 3 (Servido en `/admin`)
-- **OAuth Backend**: Cloudflare Pages Function (`functions/api/auth/callback.ts`)
+- **Base de Datos & Auth**: [Supabase](https://supabase.com) (PostgreSQL + Supabase Auth)
+- **API Runtime**: Cloudflare Workers (Astro API Routes Serverless & Middleware)
+- **Panel de Administración**: Nativo (Desarrollado en Astro SSR, servido en `/admin`)
 
----
+### Diagrama de Arquitectura (C4)
 
-## 📁 Estructura del Proyecto
+```mermaid
+flowchart TD
+    subgraph Browser ["Navegador Cliente"]
+        Visitor["Visitante (Cliente)"]
+        AdminUser["Administrador (Staff)"]
+    end
 
-```text
-presencia-web/
-├── functions/
-│   └── api/
-│       └── auth/
-│           └── callback.ts             # Cloudflare Function para GitHub OAuth de Decap CMS
-├── public/
-│   ├── admin/
-│   │   ├── config.yml                  # Configuración de colecciones de Decap CMS
-│   │   └── index.html                  # SPA Loader de Decap CMS
-│   ├── videos/
-│   │   └── hero.mp4                    # Video de fondo para la sección Hero (≤50MB)
-│   └── sitemap.xml                     # Sitemap bilingüe XML con hreflang
-├── src/
-│   ├── components/
-│   │   ├── ContactForm.astro           # Formulario de contacto (5 campos)
-│   │   ├── FAQ.astro                   # Acordeón de preguntas frecuentes
-│   │   ├── Footer.astro                # Pie de página (4 columnas + copyright)
-│   │   ├── Header.astro                # Header sticky con transición de scroll
-│   │   ├── Hero.astro                  # Video 100vh + CTAs texto subrayado
-│   │   ├── HowItWorks.astro            # Timeline horizontal de 4 pasos
-│   │   ├── Packages.astro              # Cards de paquetes (SERENIDAD primero en DOM)
-│   │   ├── Subscribe.astro             # Bloque de suscripción de email
-│   │   ├── WhatsAppFAB.astro           # Botón flotante verde fijo
-│   │   └── WhatsAppLink.astro          # Componente centralizado con tracking de analytics
-│   ├── content/
-│   │   ├── config.ts                   # Schema placeholder de Astro content
-│   │   ├── paquetes.yaml               # Datos de los paquetes (editables vía CMS)
-│   │   └── site.yaml                   # Textos del hero y video (editables vía CMS)
-│   ├── i18n/
-│   │   ├── en.json                     # Diccionario de cadenas en inglés
-│   │   ├── es.json                     # Diccionario de cadenas en español
-│   │   └── utils.ts                    # Helper t(locale, key) y getLangFromUrl
-│   ├── layouts/
-│   │   └── Base.astro                  # HTML shell, fuentes, SEO, Open Graph y Analytics
-│   ├── pages/
-│   │   ├── admin/
-│   │   │   └── leads.astro             # Vista administrativa SSR de leads capturados
-│   │   ├── api/
-│   │   │   ├── admin/
-│   │   │   │   └── leads.ts            # Endpoint GET para obtener solicitudes desde Supabase
-│   │   │   ├── contact.ts              # Endpoint POST para insertar leads
-│   │   │   └── subscribe.ts            # Endpoint POST para insertar suscripciones
-│   │   ├── en/
-│   │   │   └── index.astro             # Landing completa en Inglés
-│   │   ├── es/
-│   │   │   └── index.astro             # Landing completa en Español
-│   │   ├── config.ts                   # Configuración global del teléfono de WhatsApp
-│   │   ├── env.d.ts                    # Tipado TypeScript para variables de entorno
-│   │   └── index.astro                 # Redirección automática a /es/
-├── supabase/
-│   └── migrations/
-│       └── 001_initial.sql             # Esquema DDL de las tablas leads y subscriptions con RLS
-├── astro.config.mjs                    # Configuración de Astro (hybrid, cloudflare, i18n)
-├── tailwind.config.mjs                 # Tokens de colores y fuentes de la marca
-├── package.json
-└── README.md
+    subgraph Cloudflare ["Cloudflare (Astro Hybrid)"]
+        Pages["CDN (Páginas Estáticas)"]
+        Middleware["Astro Middleware (Auth Guard)"]
+        
+        subgraph Workers ["Serverless API / SSR"]
+            ApiContact["POST /api/contact"]
+            ApiSubscribe["POST /api/subscribe"]
+            AdminRoutes["SSR /admin/*\n(Gestión y UI)"]
+        end
+        
+        Analytics["Web Analytics (Eventos)"]
+    end
+
+    subgraph Supabase ["Supabase (Backend)"]
+        Auth["Supabase Auth (Email / Password)"]
+        
+        subgraph Database ["PostgreSQL"]
+            Leads["Tabla: leads"]
+            Subs["Tabla: subscriptions"]
+            Content["Tabla: site_config"]
+        end
+    end
+
+    %% Relaciones de Visitantes
+    Visitor -->|Visita sitio web| Pages
+    Visitor -->|Envía formulario| ApiContact
+    Visitor -->|Se suscribe| ApiSubscribe
+    Visitor -->|Clic WhatsApp| Analytics
+
+    %% Relaciones de Administrador
+    AdminUser -->|Solicita acceso a panel| Middleware
+    Middleware -->|Verifica Sesión| Auth
+    Middleware -->|Redirige a login o permite acceso| AdminRoutes
+    AdminUser -->|Inicia sesión con credenciales| Auth
+    
+    %% API a BD
+    ApiContact -->|INSERT| Leads
+    ApiSubscribe -->|INSERT| Subs
+    AdminRoutes -->|CRUD| Leads
+    AdminRoutes -->|CRUD| Subs
+    AdminRoutes -->|CRUD| Content
+```
+
+### Modelo de Datos (ERD)
+
+```mermaid
+erDiagram
+    LEADS {
+        uuid id PK
+        string name
+        string email
+        string phone
+        string package
+        timestamp created_at
+    }
+
+    SUBSCRIPTIONS {
+        uuid id PK
+        string email
+        boolean active
+        timestamp created_at
+    }
+
+    SITE_CONFIG {
+        string key PK "ej: hero, paquetes"
+        jsonb value "valor del contenido (texto, num, url)"
+        timestamp updated_at
+    }
 ```
 
 ---
 
-## 🚀 Instalación y Desarrollo Local
+## 🛠️ Instalación y Desarrollo Local
 
-### 1. Clonar el repositorio e instalar dependencias:
+### 1. Clonar e instalar dependencias:
 ```bash
-git clone https://github.com/TU-USUARIO/presencia-web.git
+git clone https://github.com/pcamacho447/presencia-website.git
 cd presencia-web
 npm install
 ```
@@ -141,50 +124,76 @@ npm run build
 
 ---
 
-## 🔑 Variables de Entorno
+## 🔐 Variables de Entorno
 
-Configura las siguientes variables en el panel de **Cloudflare Pages** (`Settings > Environment Variables`):
+Configura las siguientes variables locales en `.env.local` y en producción dentro del panel de **Cloudflare Pages** (`Settings > Environment Variables`):
 
 | Variable | Descripción | Ubicación |
 |---|---|---|
-| `SUPABASE_URL` | URL de tu proyecto Supabase (`https://xxx.supabase.co`) | Cloudflare Pages Env |
-| `SUPABASE_SERVICE_ROLE_KEY` | Key privada de servicio (`service_role`) de Supabase | Cloudflare Pages Env (Secret) |
-| `GITHUB_CLIENT_ID` | Client ID de tu GitHub OAuth App | Cloudflare Pages Env |
-| `GITHUB_CLIENT_SECRET` | Client Secret de tu GitHub OAuth App | Cloudflare Pages Env (Secret) |
+| `SUPABASE_URL` | URL de tu proyecto Supabase (`https://xxx.supabase.co`) | `.env.local` & Cloudflare Pages Env |
+| `SUPABASE_ANON_KEY` | Key pública (anon) de Supabase para el cliente Auth | `.env.local` & Cloudflare Pages Env |
+| `SUPABASE_SERVICE_ROLE_KEY` | Key privada de servicio (`service_role`) para endpoints backend | `.env.local` & Cloudflare Pages Env (Secret) |
 
-> ⚠️ **Importante**: La `SUPABASE_SERVICE_ROLE_KEY` **nunca** debe incluirse en el código fuente cliente o archivos commiteados al repositorio. Solo se utiliza dentro de los endpoints serverless de `/api/`.
+> ⚠️ **Importante**: La `SUPABASE_SERVICE_ROLE_KEY` **nunca** debe exponerse. Solo se utiliza dentro de los endpoints serverless de `/api/`.
 
 ---
 
 ## 🗄️ Base de Datos (Supabase)
 
-Para inicializar las tablas en tu proyecto Supabase:
-1. Dirígete al **SQL Editor** en el dashboard de Supabase.
-2. Copia y ejecuta el contenido del archivo [`supabase/migrations/001_initial.sql`](file:///C:/papx/presencia-web/supabase/migrations/001_initial.sql).
-3. Esto creará:
-   - Tabla `leads` (id, nombre, whatsapp, ciudad, fecha_deseada, paquete, created_at).
-   - Tabla `subscriptions` (id, email UNIQUE, created_at).
-   - Políticas de **Row Level Security (RLS)** activas que bloquean lecturas/escrituras anónimas directas desde el cliente.
+Para inicializar las tablas en un nuevo proyecto de Supabase, ejecuta este SQL en el **SQL Editor**:
+
+```sql
+-- 1. Crear tabla de Leads (Contactos)
+CREATE TABLE leads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  package TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. Crear tabla de Configuración del Sitio
+CREATE TABLE site_config (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. Crear tabla de Suscripciones
+CREATE TABLE subscriptions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 4. Insertar los datos base (Hero y Paquetes)
+INSERT INTO site_config (key, value) VALUES
+('hero', '{"video_url": "/videos/hero.mp4", "title_es": "Flores en Paz", "title_en": "Peaceful Flowers", "subtitle_es": "Honrando su memoria", "subtitle_en": "Honoring their memory"}'),
+('paquetes', '[{"id": "esencial", "precio_sol": "500", "precio_usd": "150", "destacado": false}, {"id": "serenidad", "precio_sol": "800", "precio_usd": "250", "destacado": true}, {"id": "memoria_viva", "precio_sol": "1200", "precio_usd": "400", "destacado": false}]');
+```
 
 ---
 
-## 🔐 Panel de Administración (Decap CMS & Leads)
+## 👑 Panel de Administración (`/admin`)
 
-### 1. Gestión de Contenidos (`/admin`)
-- Accesible en `https://tusitio.com/admin/`.
-- Permite modificar precios, beneficios de los paquetes, textos del hero y la URL del video de fondo.
-- Requiere haber creado una **GitHub OAuth App** configurada con:
-  - Homepage URL: `https://tusitio.com`
-  - Authorization callback URL: `https://tusitio.com/api/auth/callback`
+El sitio incluye un panel de control nativo, protegido por Astro Middleware y Supabase Auth, que permite gestionar dinámicamente el contenido sin depender de un CMS de terceros.
 
-### 2. Dashboard de Leads Capturados (`/admin/leads`)
-- Accesible en `https://tusitio.com/admin/leads`.
-- Renderiza una tabla con todas las solicitudes de contacto recibidas en tiempo real.
-- En producción se recomienda proteger el acceso utilizando **Cloudflare Access (Zero Trust)** mediante reglas de autenticación por Email OTP.
+### Acceso
+- URL: `https://tusitio.com/admin/` (o `http://localhost:4321/admin/` en local).
+- Las rutas administrativas están protegidas y exigen **Email y Contraseña**.
+- Las credenciales deben registrarse primero en el panel de Supabase (`Authentication > Users`).
+
+### Módulos del Panel
+- **Dashboard**: Vista general y métricas.
+- **Gestión de Leads (`/admin/leads`)**: Tabla en tiempo real con solicitudes de contacto.
+- **Gestión de Paquetes (`/admin/paquetes`)**: Editar precios y destacar paquetes en vivo.
+- **Gestión del Hero (`/admin/sitio`)**: Cambiar textos bilingües y el video de fondo.
 
 ---
 
-## 🌐 Despliegue a Producción (Cloudflare Pages)
+## 🚀 Despliegue a Producción (Cloudflare Pages)
 
 1. Conecta tu repositorio de GitHub a **Cloudflare Pages**.
 2. Configura los parámetros de build:
@@ -192,8 +201,8 @@ Para inicializar las tablas en tu proyecto Supabase:
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
 3. Agrega las variables de entorno listadas arriba en la sección `Settings > Environment Variables`.
-4. ¡Despliega! Cloudflare compilará automáticamente el sitio estático y desplegará los Workers en el borde.
+4. ¡Despliega! Cloudflare compilará automáticamente el sitio estático y desplegará el Astro Middleware en el borde (Workers).
 
 ---
 
-© 2026 Flores en Paz · Todos los derechos reservados.
+© 2026 Flores en Paz — Todos los derechos reservados.
