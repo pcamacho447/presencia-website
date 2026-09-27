@@ -15,26 +15,24 @@ if (session) {
 let message = '';
 let error = '';
 
-// Manejar POST: enviar Magic Link
+// Manejar POST: iniciar sesión con email y contraseña
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const email = form.get('email')?.toString().trim() ?? '';
+  const password = form.get('password')?.toString() ?? '';
 
-  if (!email || !email.includes('@')) {
-    error = 'Ingresa un email válido.';
+  if (!email || !email.includes('@') || !password) {
+    error = 'Por favor, ingresa un email y contraseña válidos.';
   } else {
-    const { error: otpError } = await supabase.auth.signInWithOtp({
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
-      options: {
-        emailRedirectTo: `${Astro.url.origin}/admin/auth-callback`,
-        shouldCreateUser: false,  // Solo usuarios ya registrados en Supabase Auth
-      },
+      password,
     });
 
-    if (otpError) {
-      error = 'No se pudo enviar el enlace. Verifica que el email esté registrado.';
+    if (signInError) {
+      error = 'Credenciales incorrectas o usuario no autorizado.';
     } else {
-      message = `Enlace mágico enviado a ${email}. Revisa tu bandeja de entrada.`;
+      return Astro.redirect('/admin/');
     }
   }
 }
@@ -71,41 +69,35 @@ if (Astro.request.method === 'POST') {
           {error}
         </div>
       )}
-      {message && (
-        <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700">
-          {message}
-        </div>
-      )}
 
-      {!message && (
-        <form method="POST" class="space-y-5">
-          <div>
-            <label class="block text-sm font-bold mb-2">Email de acceso</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="tucorreo@ejemplo.com"
-              required
-              class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary"
-            />
-          </div>
-          <button
-            type="submit"
-            class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:opacity-90 transition shadow-sm"
-          >
-            Enviar Enlace Mágico
-          </button>
-        </form>
-      )}
-
-      {message && (
-        <div class="text-center text-sm opacity-70 mt-4">
-          <p>El enlace expira en 1 hora.</p>
-          <button onclick="location.reload()" class="mt-3 text-primary underline text-sm">
-            Enviar de nuevo
-          </button>
+      <form method="POST" class="space-y-5">
+        <div>
+          <label class="block text-sm font-bold mb-2">Email de acceso</label>
+          <input
+            type="email"
+            name="email"
+            placeholder="tucorreo@ejemplo.com"
+            required
+            class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary"
+          />
         </div>
-      )}
+        <div>
+          <label class="block text-sm font-bold mb-2">Contraseña</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="••••••••"
+            required
+            class="w-full p-3 border border-primary/20 rounded-xl text-sm focus:outline-none focus:border-primary"
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:opacity-90 transition shadow-sm"
+        >
+          Iniciar Sesión
+        </button>
+      </form>
     </div>
 
     <p class="text-center text-xs opacity-50 mt-6">
