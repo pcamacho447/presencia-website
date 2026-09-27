@@ -157,29 +157,31 @@ flowchart LR
     subgraph Browser["Browser (móvil / desktop)"]
         A[Astro HTML estático]
         B[WhatsAppLink click → evento CF Analytics]
+        K[Panel Admin SSR]
     end
 
-    subgraph CF["Cloudflare"]
+    subgraph CF["Cloudflare (Astro Hybrid)"]
         C[Pages CDN\n/es/ /en/ + assets]
         D[Worker: /api/contact]
         E[Worker: /api/subscribe]
-        F[Worker: /admin OAuth]
+        F[Astro Middleware\nAuth Guard]
         G[Web Analytics]
     end
 
-    subgraph Services["Servicios externos"]
-        H[Supabase\nleads + subscriptions]
-        I[GitHub repo\ncódigo + content YAML + hero.mp4]
-        J[Decap CMS\npanel /admin]
+    subgraph Services["Servicios externos (Supabase)"]
+        H[Base de Datos\nleads + subscriptions + content]
+        J[Supabase Auth\nMagic Link]
     end
 
-    Browser -->|GET| C
+    Browser -->|GET estático| C
     B -->|event| G
     A -->|POST form| D
     A -->|POST email| E
     D -->|INSERT| H
     E -->|INSERT| H
-    J -->|commit YAML/video| I
-    I -->|deploy automático| C
-    J -->|OAuth| F
+    
+    %% Flujo de Administrador
+    K -->|Solicita /admin/*| F
+    F -->|Valida Sesión| J
+    F -->|Permite SSR| H
 ```

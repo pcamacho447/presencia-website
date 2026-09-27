@@ -1,0 +1,47 @@
+flowchart TD
+    subgraph Browser ["Navegador Cliente"]
+        Visitor["Visitante (Cliente)"]
+        AdminUser["Administrador (Staff)"]
+    end
+
+    subgraph Cloudflare ["Cloudflare (Astro Hybrid)"]
+        Pages["CDN (Páginas Estáticas)"]
+        Middleware["Astro Middleware (Auth Guard)"]
+        
+        subgraph Workers ["Serverless API / SSR"]
+            ApiContact["POST /api/contact"]
+            ApiSubscribe["POST /api/subscribe"]
+            AdminRoutes["SSR /admin/*\n(Gestión y UI)"]
+        end
+        
+        Analytics["Web Analytics (Eventos)"]
+    end
+
+    subgraph Supabase ["Supabase (Backend)"]
+        Auth["Supabase Auth (Magic Link)"]
+        
+        subgraph Database ["PostgreSQL"]
+            Leads["Tabla: leads"]
+            Subs["Tabla: subscriptions"]
+            Content["Tabla: content (CMS)"]
+        end
+    end
+
+    %% Relaciones de Visitantes
+    Visitor -->|Visita sitio web| Pages
+    Visitor -->|Envía formulario| ApiContact
+    Visitor -->|Se suscribe| ApiSubscribe
+    Visitor -->|Clic WhatsApp| Analytics
+
+    %% Relaciones de Administrador
+    AdminUser -->|Solicita acceso a panel| Middleware
+    Middleware -->|Verifica Sesión| Auth
+    Middleware -->|Redirige a login o permite acceso| AdminRoutes
+    AdminUser -->|Recibe Magic Link| Auth
+    
+    %% API a BD
+    ApiContact -->|INSERT| Leads
+    ApiSubscribe -->|INSERT| Subs
+    AdminRoutes -->|CRUD| Leads
+    AdminRoutes -->|CRUD| Subs
+    AdminRoutes -->|CRUD| Content

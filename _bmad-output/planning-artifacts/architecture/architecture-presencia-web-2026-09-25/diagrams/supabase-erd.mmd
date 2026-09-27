@@ -1,0 +1,26 @@
+erDiagram
+    LEADS {
+        uuid id PK
+        string nombre
+        string email
+        string telefono
+        string paquete_interes
+        string mensaje
+        timestamp created_at
+    }
+
+    SUBSCRIPTIONS {
+        uuid id PK
+        string email
+        boolean active
+        timestamp created_at
+    }
+
+    SITE_CONTENT {
+        string key PK "ej: hero_video, paquete_basico_precio"
+        jsonb value "valor del contenido (texto, num, url)"
+        string language "es/en"
+        timestamp updated_at
+    }
+
+    LEADS ||--o{ SUBSCRIPTIONS : "puede suscribirse"
