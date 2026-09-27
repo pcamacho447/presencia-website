@@ -1,14 +1,15 @@
 // src/pages/api/admin/leads.ts
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { getEnv } from '../../../lib/env';
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (context) => {
   try {
     const supabase = createClient(
-      import.meta.env.SUPABASE_URL,
-      import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+      getEnv(context, 'SUPABASE_URL'),
+      getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
       { auth: { persistSession: false } }
     );
 

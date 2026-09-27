@@ -21,7 +21,7 @@ if (!code) {
   return Astro.redirect('/admin/login?error=no_code_in_url');
 }
 
-const supabase = createSupabaseServerClient(Astro.request, Astro.cookies);
+const supabase = createSupabaseServerClient(Astro);
 const { error } = await supabase.auth.exchangeCodeForSession(code);
 
 if (error) {

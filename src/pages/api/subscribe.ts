@@ -1,10 +1,11 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { getEnv } from '../../lib/env';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
-  const json = await request.json().catch(() => null);
+export const POST: APIRoute = async (context) => {
+  const json = await context.request.json().catch(() => null);
 
   if (!json || !json.email || !String(json.email).includes('@')) {
     return new Response(JSON.stringify({ error: 'Email inválido' }), {
@@ -14,8 +15,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+    getEnv(context, 'SUPABASE_URL'),
+    getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
     { auth: { persistSession: false } }
   );
 

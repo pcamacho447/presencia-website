@@ -1,15 +1,16 @@
 // src/pages/api/admin/config.ts
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { getEnv } from '../../../lib/env';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url }) => {
-  const key = url.searchParams.get('key');
+export const GET: APIRoute = async (context) => {
+  const key = context.url.searchParams.get('key');
   
   const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+    getEnv(context, 'SUPABASE_URL'),
+    getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
     { auth: { persistSession: false } }
   );
 
@@ -33,8 +34,8 @@ export const GET: APIRoute = async ({ url }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request }) => {
-  const json = await request.json().catch(() => null);
+export const POST: APIRoute = async (context) => {
+  const json = await context.request.json().catch(() => null);
 
   if (!json || !json.key || json.value === undefined) {
     return new Response(JSON.stringify({ error: 'Parámetros inválidos' }), {
@@ -44,8 +45,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const supabase = createClient(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+    getEnv(context, 'SUPABASE_URL'),
+    getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
     { auth: { persistSession: false } }
   );
 

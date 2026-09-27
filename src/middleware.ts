@@ -32,7 +32,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // Validar sesión
-  const supabase = createSupabaseServerClient(context.request, context.cookies);
+  const supabase = createSupabaseServerClient(context);
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
