@@ -95,5 +95,12 @@
   "meta": {
     "title": "Flores en Paz — Colocación de Flores en Cementerios de Lima, Trujillo y Arequipa",
     "description": "Servicio de colocación de flores en cementerios. Tú decides, nosotros llegamos. Foto y video incluido. Lima, Trujillo, Arequipa."
+  },
+  "catalog": {
+    "title": "Catálogo de Arreglos Florales",
+    "subtitle": "Elige el detalle perfecto. Flores frescas y de temporada.",
+    "currency_sol": "S/",
+    "currency_usd": "$",
+    "consult_whatsapp": "CONSULTAR POR WHATSAPP"
   }
 }

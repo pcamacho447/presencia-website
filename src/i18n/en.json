@@ -95,5 +95,12 @@
   "meta": {
     "title": "Flores en Paz — Flower Placement at Cemeteries in Lima, Trujillo and Arequipa",
     "description": "Flower placement service at cemeteries. You decide, we go. Photo and video included. Lima, Trujillo, Arequipa."
+  },
+  "catalog": {
+    "title": "Floral Arrangements Catalog",
+    "subtitle": "Choose the perfect detail. Fresh and seasonal flowers.",
+    "currency_sol": "S/",
+    "currency_usd": "$",
+    "consult_whatsapp": "INQUIRE ON WHATSAPP"
   }
 }
