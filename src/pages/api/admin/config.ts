@@ -6,13 +6,18 @@ import { getEnv } from '../../../lib/env';
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
+  const url = getEnv(context, 'SUPABASE_URL');
+  const serviceKey = getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!url || !serviceKey) {
+    return new Response(JSON.stringify({ error: 'Falta SUPABASE_SERVICE_ROLE_KEY en las variables de Cloudflare' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const key = context.url.searchParams.get('key');
-  
-  const supabase = createClient(
-    getEnv(context, 'SUPABASE_URL'),
-    getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false } }
-  );
+  const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
   let query = supabase.from('site_config').select('key, value, updated_at');
   if (key) {
@@ -44,11 +49,17 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  const supabase = createClient(
-    getEnv(context, 'SUPABASE_URL'),
-    getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false } }
-  );
+  const url = getEnv(context, 'SUPABASE_URL');
+  const serviceKey = getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!url || !serviceKey) {
+    return new Response(JSON.stringify({ error: 'Falta SUPABASE_SERVICE_ROLE_KEY en las variables de Cloudflare' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
   const { error } = await supabase
     .from('site_config')

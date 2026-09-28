@@ -14,11 +14,17 @@ export const POST: APIRoute = async (context) => {
     });
   }
 
-  const supabase = createClient(
-    getEnv(context, 'SUPABASE_URL'),
-    getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
-    { auth: { persistSession: false } }
-  );
+  const url = getEnv(context, 'SUPABASE_URL');
+  const serviceKey = getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!url || !serviceKey) {
+    return new Response(JSON.stringify({ error: 'Configuración incompleta de servidor' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
   const { error } = await supabase.from('leads').insert({
     nombre: String(json.nombre).slice(0, 200),

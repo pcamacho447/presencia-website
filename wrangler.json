@@ -7,6 +7,11 @@
     "nodejs_compat"
   ],
   "assets": {
+    "binding": "ASSETS",
     "directory": "./dist"
+  },
+  "vars": {
+    "SUPABASE_URL": "https://ugsoaousrkmhusfkskhm.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnc29hb3VzcmttaHVzZmtza2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNzcyNDcsImV4cCI6MjEwNTk1MzI0N30.TjwQRUZcyZK2bp5rUfZnfCI98k5jO260gnSdt_FFfCM"
   }
 }

@@ -7,11 +7,17 @@ export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
   try {
-    const supabase = createClient(
-      getEnv(context, 'SUPABASE_URL'),
-      getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY'),
-      { auth: { persistSession: false } }
-    );
+    const url = getEnv(context, 'SUPABASE_URL');
+    const serviceKey = getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!url || !serviceKey) {
+      return new Response(JSON.stringify({ error: 'Falta SUPABASE_SERVICE_ROLE_KEY en las variables de Cloudflare' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
 
     const { data, error } = await supabase
       .from('leads')
@@ -19,7 +25,7 @@ export const GET: APIRoute = async (context) => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return new Response(JSON.stringify({ error: 'Error interno' }), {
+      return new Response(JSON.stringify({ error: 'Error al consultar leads' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -29,8 +35,8 @@ export const GET: APIRoute = async (context) => {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch {
-    return new Response(JSON.stringify({ error: 'Error interno' }), {
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err?.message || 'Error interno' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
