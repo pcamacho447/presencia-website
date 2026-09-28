@@ -33,7 +33,21 @@ export const GET: APIRoute = async (context) => {
     });
   }
 
-  return new Response(JSON.stringify(key ? (data[0]?.value ?? null) : data), {
+  let responseData = key ? (data[0]?.value ?? null) : data;
+
+  if (key === 'catalogo' && (!responseData || (Array.isArray(responseData) && responseData.length === 0))) {
+    const { defaultCatalog } = await import('../../../data/defaultCatalog');
+    responseData = defaultCatalog;
+  }
+
+  if (key === 'paquetes' && (!responseData || (Array.isArray(responseData) && responseData.length === 0))) {
+    const { load: parse } = await import('js-yaml');
+    const yamlModule = await import('../../../content/paquetes/paquetes.yaml?raw');
+    const parsed = parse(yamlModule.default) as any;
+    responseData = parsed?.paquetes || [];
+  }
+
+  return new Response(JSON.stringify(responseData), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

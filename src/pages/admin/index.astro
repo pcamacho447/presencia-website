@@ -209,7 +209,15 @@ try {
     <!-- Pestaña 2: Paquetes y Precios -->
     <section id="tab-content-paquetes" class="tab-content hidden">
       <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
-        <h2 class="font-heading text-2xl font-bold mb-4">Edición de Paquetes y Precios</h2>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div>
+            <h2 class="font-heading text-2xl font-bold">Edición de Paquetes y Precios</h2>
+            <p class="text-xs opacity-70">Gestiona nombres, precios, beneficios y botones de compra para los paquetes del landing.</p>
+          </div>
+          <button type="button" onclick="addNewPaquete()" class="bg-primary/10 text-primary border border-primary/20 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary/20 transition">
+            + Añadir Paquete
+          </button>
+        </div>
         <div id="loading-paquetes" class="text-center py-8 opacity-70">Cargando paquetes desde Supabase...</div>
         
         <form id="paquetes-form" class="hidden space-y-8">
@@ -228,8 +236,15 @@ try {
     <!-- Pestaña: Catálogo Floral -->
     <section id="tab-content-catalogo" class="tab-content hidden">
       <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
-        <h2 class="font-heading text-2xl font-bold mb-4">Catálogo de Arreglos Florales</h2>
-        <p class="text-sm opacity-80 mb-6">Gestiona los precios, disponibilidad y visibilidad de los arreglos en el catálogo público.</p>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div>
+            <h2 class="font-heading text-2xl font-bold">Catálogo de Arreglos Florales</h2>
+            <p class="text-xs opacity-70">Gestiona precios, fotos, disponibilidad y botones de Shopify / WhatsApp.</p>
+          </div>
+          <button type="button" onclick="addNewArreglo()" class="bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow-sm">
+            + Añadir Arreglo Floral
+          </button>
+        </div>
         <div id="loading-catalogo" class="text-center py-8 opacity-70">Cargando catálogo desde Supabase...</div>
         
         <form id="catalogo-form" class="hidden space-y-8">
@@ -320,6 +335,21 @@ try {
       }
     }
 
+    // Fallbacks locales para que el admin siempre tenga datos editables visibles
+    const defaultCatalogFallback = [
+      { id: 'lirios-paz', nombre_es: 'Lirios de la Paz', flores_es: 'Lirios blancos, rosas y follaje fino', precio_sol: 190, precio_usd: 55, imagen_url: '/images/arrangements/lirios-paz.jpg', disponible: true, destacado: true, shopify_enabled: false, shopify_checkout_url: '' },
+      { id: 'girasoles-esperanza', nombre_es: 'Girasoles de Esperanza', flores_es: 'Girasoles vibrantes, margaritas y eucalipto', precio_sol: 220, precio_usd: 65, imagen_url: '/images/arrangements/girasoles-esperanza.jpg', disponible: true, destacado: true, shopify_enabled: false, shopify_checkout_url: '' },
+      { id: 'manto-claveles', nombre_es: 'Manto de Claveles', flores_es: 'Claveles seleccionados, hortensias y siemprevivas', precio_sol: 180, precio_usd: 50, imagen_url: '/images/arrangements/manto-claveles.jpg', disponible: true, destacado: false, shopify_enabled: false, shopify_checkout_url: '' },
+      { id: 'armonia-astromelias', nombre_es: 'Armonía de Astromelias', flores_es: 'Astromelias multicolores, lirios y rosas', precio_sol: 200, precio_usd: 58, imagen_url: '/images/arrangements/armonia-astromelias.jpg', disponible: true, destacado: false, shopify_enabled: false, shopify_checkout_url: '' },
+      { id: 'corazon-rosas', nombre_es: 'Corazón de Rosas', flores_es: 'Rosas premium blancas y rosadas con velo de novia', precio_sol: 250, precio_usd: 72, imagen_url: '/images/arrangements/corazon-rosas.jpg', disponible: true, destacado: true, shopify_enabled: false, shopify_checkout_url: '' }
+    ];
+
+    const defaultPaquetesFallback = [
+      { id: 'serenidad', nombre: 'SERENIDAD', destacado: true, precio_sol: '140', precio_usd: '38', beneficios: ['Arreglo floral premium de temporada', 'Tarjeta con mensaje personalizado impreso', 'Envío de foto y video de confirmación', 'Colocación garantizada en la sepultura'], shopify_enabled: false, shopify_checkout_url: '' },
+      { id: 'esencial', nombre: 'ESENCIAL', destacado: false, precio_sol: '90', precio_usd: '25', beneficios: ['Arreglo floral clásico de temporada', 'Tarjeta con mensaje personalizado', 'Envío de foto de confirmación'], shopify_enabled: false, shopify_checkout_url: '' },
+      { id: 'memoria_viva', nombre: 'MEMORIA VIVA', destacado: false, precio_sol: '240', precio_usd: '65', beneficios: ['Mantenimiento y arreglo mensual (3 meses)', 'Selección preferencial de flores', 'Tarjeta con mensaje personalizado en cada entrega', 'Reporte fotográfico mensual'], shopify_enabled: false, shopify_checkout_url: '' }
+    ];
+
     // Lógica Paquetes
     let currentPaquetes = [];
     async function loadPaquetes() {
@@ -327,28 +357,35 @@ try {
       const form = document.getElementById('paquetes-form');
       try {
         const res = await fetch('/api/admin/config?key=paquetes');
+        let data = [];
         if (res.ok) {
-          currentPaquetes = await res.json() || [];
-          renderPaquetesForm(currentPaquetes);
-          loading.classList.add('hidden');
-          form.classList.remove('hidden');
-          window.paquetesLoaded = true;
+          data = await res.json();
         }
-      } catch {
-        loading.textContent = 'Error al cargar los paquetes.';
+        currentPaquetes = Array.isArray(data) && data.length > 0 ? data : defaultPaquetesFallback;
+        renderPaquetesForm(currentPaquetes);
+        loading.classList.add('hidden');
+        form.classList.remove('hidden');
+        window.paquetesLoaded = true;
+      } catch (err) {
+        console.warn('Error loading paquetes, using fallback:', err);
+        currentPaquetes = defaultPaquetesFallback;
+        renderPaquetesForm(currentPaquetes);
+        loading.classList.add('hidden');
+        form.classList.remove('hidden');
+        window.paquetesLoaded = true;
       }
     }
 
     function renderPaquetesForm(list) {
       const container = document.getElementById('paquetes-container');
       container.innerHTML = list.map((p, idx) => `
-        <div class="p-6 border border-primary/10 rounded-2xl bg-secondary/30 space-y-4">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div class="p-6 border border-primary/10 rounded-2xl bg-secondary/30 space-y-4 relative">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pr-8">
             <div class="flex-1 w-full md:w-auto">
               <label class="block text-xs font-bold mb-1 text-primary">Nombre del Paquete</label>
               <input type="text" name="pkg_nombre_${idx}" value="${p.nombre || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm font-heading font-bold" required>
             </div>
-            <div class="flex flex-wrap items-center gap-4 text-sm">
+            <div class="flex flex-wrap items-center gap-3 text-sm">
               <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-primary/10">
                 <input type="checkbox" name="destacado_${idx}" ${p.destacado ? 'checked' : ''} class="w-4 h-4 accent-primary">
                 <span class="font-semibold text-primary text-xs">Destacado ("Más elegido")</span>
@@ -359,6 +396,10 @@ try {
               </label>
             </div>
           </div>
+
+          <button type="button" onclick="removePaquete(${idx})" title="Eliminar este paquete" class="absolute top-4 right-4 text-red-500 hover:text-red-700 p-1 text-lg">
+            ✕
+          </button>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -385,6 +426,29 @@ try {
       `).join('');
     }
 
+    function addNewPaquete() {
+      currentPaquetes.push({
+        id: 'paquete-' + Date.now(),
+        nombre: 'NUEVO PAQUETE',
+        destacado: false,
+        precio_sol: '100',
+        precio_usd: '30',
+        beneficios: ['Atención personalizada', 'Flores frescas garantizadas'],
+        shopify_enabled: false,
+        shopify_checkout_url: ''
+      });
+      renderPaquetesForm(currentPaquetes);
+      document.getElementById('loading-paquetes')?.classList.add('hidden');
+      document.getElementById('paquetes-form')?.classList.remove('hidden');
+    }
+
+    function removePaquete(idx) {
+      if (confirm('¿Deseas eliminar este paquete?')) {
+        currentPaquetes.splice(idx, 1);
+        renderPaquetesForm(currentPaquetes);
+      }
+    }
+
     document.getElementById('paquetes-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const msg = document.getElementById('msg-paquetes');
@@ -393,18 +457,18 @@ try {
       msg.textContent = 'Guardando...';
 
       const updated = currentPaquetes.map((p, idx) => {
-        const rawBeneficios = e.target[`pkg_beneficios_${idx}`].value || '';
+        const rawBeneficios = e.target[`pkg_beneficios_${idx}`]?.value || '';
         const beneficios = rawBeneficios.split('\n').map(s => s.trim()).filter(Boolean);
 
         return {
           ...p,
-          nombre: e.target[`pkg_nombre_${idx}`].value,
-          destacado: e.target[`destacado_${idx}`].checked,
-          precio_sol: e.target[`precio_sol_${idx}`].value,
-          precio_usd: e.target[`precio_usd_${idx}`].value,
+          nombre: e.target[`pkg_nombre_${idx}`]?.value || p.nombre,
+          destacado: e.target[`destacado_${idx}`]?.checked || false,
+          precio_sol: e.target[`precio_sol_${idx}`]?.value || p.precio_sol,
+          precio_usd: e.target[`precio_usd_${idx}`]?.value || p.precio_usd,
           beneficios: beneficios,
-          shopify_enabled: e.target[`pkg_shopify_enabled_${idx}`].checked,
-          shopify_checkout_url: e.target[`pkg_shopify_url_${idx}`].value.trim(),
+          shopify_enabled: e.target[`pkg_shopify_enabled_${idx}`]?.checked || false,
+          shopify_checkout_url: (e.target[`pkg_shopify_url_${idx}`]?.value || '').trim(),
         };
       });
 
@@ -436,29 +500,30 @@ try {
       const form = document.getElementById('catalogo-form');
       try {
         const res = await fetch('/api/admin/config?key=catalogo');
+        let data = [];
         if (res.ok) {
-          const data = await res.json();
-          // Fallback en caso esté vacío, se podría manejar trayendo del API
-          currentCatalogo = Array.isArray(data) && data.length > 0 ? data : []; 
-          if (currentCatalogo.length === 0) {
-            loading.textContent = 'No hay arreglos en Supabase. Se mostrarán los de por defecto en la vista pública.';
-          } else {
-            renderCatalogoForm(currentCatalogo);
-            loading.classList.add('hidden');
-            form.classList.remove('hidden');
-            window.catalogoLoaded = true;
-          }
+          data = await res.json();
         }
-      } catch {
-        loading.textContent = 'Error al cargar el catálogo.';
+        currentCatalogo = Array.isArray(data) && data.length > 0 ? data : defaultCatalogFallback; 
+        renderCatalogoForm(currentCatalogo);
+        loading.classList.add('hidden');
+        form.classList.remove('hidden');
+        window.catalogoLoaded = true;
+      } catch (err) {
+        console.warn('Error loading catalogo, using fallback:', err);
+        currentCatalogo = defaultCatalogFallback;
+        renderCatalogoForm(currentCatalogo);
+        loading.classList.add('hidden');
+        form.classList.remove('hidden');
+        window.catalogoLoaded = true;
       }
     }
 
     function renderCatalogoForm(list) {
       const container = document.getElementById('catalogo-container');
       container.innerHTML = list.map((c, idx) => `
-        <div class="p-6 border border-primary/10 rounded-2xl bg-secondary/30 space-y-4">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div class="p-6 border border-primary/10 rounded-2xl bg-secondary/30 space-y-4 relative">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 pr-8">
             <div class="flex-1 w-full md:w-auto">
               <label class="block text-xs font-bold mb-1 text-primary">Nombre del Arreglo Floral</label>
               <input type="text" name="cat_nombre_es_${idx}" value="${c.nombre_es || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm font-heading font-bold" required>
@@ -478,6 +543,10 @@ try {
               </label>
             </div>
           </div>
+
+          <button type="button" onclick="removeArreglo(${idx})" title="Eliminar este arreglo" class="absolute top-4 right-4 text-red-500 hover:text-red-700 p-1 text-lg">
+            ✕
+          </button>
 
           <div>
             <label class="block text-xs font-bold mb-1">Flores / Descripción breve</label>
@@ -508,6 +577,31 @@ try {
       `).join('');
     }
 
+    function addNewArreglo() {
+      currentCatalogo.push({
+        id: 'arreglo-' + Date.now(),
+        nombre_es: 'Nuevo Arreglo Floral',
+        flores_es: 'Flores frescas de temporada',
+        precio_sol: 190,
+        precio_usd: 55,
+        imagen_url: '/images/hero-bg.jpg',
+        disponible: true,
+        destacado: false,
+        shopify_enabled: false,
+        shopify_checkout_url: ''
+      });
+      renderCatalogoForm(currentCatalogo);
+      document.getElementById('loading-catalogo')?.classList.add('hidden');
+      document.getElementById('catalogo-form')?.classList.remove('hidden');
+    }
+
+    function removeArreglo(idx) {
+      if (confirm('¿Deseas eliminar este arreglo floral?')) {
+        currentCatalogo.splice(idx, 1);
+        renderCatalogoForm(currentCatalogo);
+      }
+    }
+
     document.getElementById('catalogo-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const msg = document.getElementById('msg-catalogo');
@@ -517,15 +611,15 @@ try {
 
       const updated = currentCatalogo.map((c, idx) => ({
         ...c,
-        nombre_es: e.target[`cat_nombre_es_${idx}`].value,
-        flores_es: e.target[`cat_flores_es_${idx}`].value,
-        disponible: e.target[`cat_disponible_${idx}`].checked,
-        destacado: e.target[`cat_destacado_${idx}`].checked,
-        precio_sol: Number(e.target[`cat_precio_sol_${idx}`].value),
-        precio_usd: Number(e.target[`cat_precio_usd_${idx}`].value),
-        imagen_url: e.target[`cat_imagen_url_${idx}`].value,
-        shopify_enabled: e.target[`cat_shopify_enabled_${idx}`].checked,
-        shopify_checkout_url: e.target[`cat_shopify_url_${idx}`].value.trim(),
+        nombre_es: e.target[`cat_nombre_es_${idx}`]?.value || c.nombre_es,
+        flores_es: e.target[`cat_flores_es_${idx}`]?.value || c.flores_es,
+        disponible: e.target[`cat_disponible_${idx}`]?.checked || false,
+        destacado: e.target[`cat_destacado_${idx}`]?.checked || false,
+        precio_sol: Number(e.target[`cat_precio_sol_${idx}`]?.value) || c.precio_sol,
+        precio_usd: Number(e.target[`cat_precio_usd_${idx}`]?.value) || c.precio_usd,
+        imagen_url: e.target[`cat_imagen_url_${idx}`]?.value || c.imagen_url,
+        shopify_enabled: e.target[`cat_shopify_enabled_${idx}`]?.checked || false,
+        shopify_checkout_url: (e.target[`cat_shopify_url_${idx}`]?.value || '').trim(),
       }));
 
       try {
