@@ -9,4 +9,6 @@ export interface CatalogItem {
   imagen_url: string;
   disponible: boolean;
   destacado: boolean;
+  shopify_enabled?: boolean;
+  shopify_checkout_url?: string;
 }

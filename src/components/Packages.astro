@@ -4,27 +4,45 @@ import { load as parse } from 'js-yaml';
 import yamlContent from '../content/paquetes/paquetes.yaml?raw';
 import WhatsAppLink from './WhatsAppLink.astro';
 import { t } from '../i18n/utils';
-
-interface Paquete {
-  id: string;
-  nombre: string;
-  destacado: boolean;
-  precio_sol: string;
-  precio_usd: string;
-  beneficios: string[];
-  beneficios_en?: string[];
-}
+import { createSupabaseServerClient } from '../lib/supabase';
+import type { PackageItem } from '../types/packages';
 
 interface Props {
   lang: string;
 }
 const { lang } = Astro.props;
 
-// Leer YAML en build time
-const data = parse(yamlContent) as { paquetes: Paquete[] };
+// Fallback desde YAML
+const defaultData = parse(yamlContent) as { paquetes: PackageItem[] };
+let paquetesList: PackageItem[] = defaultData.paquetes || [];
+
+// Consulta dinámica a Supabase site_config
+try {
+  const sb = createSupabaseServerClient(Astro);
+  const { data, error } = await sb
+    .from('site_config')
+    .select('value')
+    .eq('key', 'paquetes')
+    .single();
+
+  if (!error && data && Array.isArray(data.value) && data.value.length > 0) {
+    // Mezclar con beneficios de fallback si no estuvieran definidos en el registro
+    paquetesList = data.value.map((item: any) => {
+      const fallbackItem = defaultData.paquetes.find(p => p.id === item.id) || {};
+      return {
+        ...fallbackItem,
+        ...item,
+        beneficios: item.beneficios || fallbackItem.beneficios || [],
+        beneficios_en: item.beneficios_en || fallbackItem.beneficios_en || [],
+      };
+    });
+  }
+} catch (err) {
+  console.warn("Packages: using YAML fallback due to:", err);
+}
 
 // Ordenar: SERENIDAD (destacado) siempre primero en el DOM
-const paquetes = [...data.paquetes].sort((a, b) => {
+const paquetes = [...paquetesList].sort((a, b) => {
   if (a.destacado && !b.destacado) return -1;
   if (!a.destacado && b.destacado) return 1;
   return 0;
@@ -38,53 +56,80 @@ const paquetes = [...data.paquetes].sort((a, b) => {
 
     <!-- Cards: SERENIDAD primero en DOM, se reordenan en desktop con CSS -->
     <div class="flex flex-col md:flex-row gap-6 justify-center">
-      {paquetes.map((pkg) => (
-        <div
-          class={`relative flex flex-col bg-white rounded-2xl p-8 flex-1 max-w-sm mx-auto md:mx-0 ${
-            pkg.destacado
-              ? 'border-2 border-primary shadow-xl md:scale-105'
-              : 'border border-primary/20 shadow-sm'
-          }`}
-        >
-          <!-- Badge "Más elegido" -->
-          {pkg.destacado && (
-            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span class="bg-primary text-white text-xs font-body font-bold px-4 py-1 rounded-full tracking-widest">
-                {t(lang, 'packages.badge')}
-              </span>
+      {paquetes.map((pkg) => {
+        const packageName = (lang === 'en' && pkg.nombre_en) ? pkg.nombre_en : pkg.nombre;
+        const benefits = (lang === 'en' && pkg.beneficios_en && pkg.beneficios_en.length > 0) 
+          ? pkg.beneficios_en 
+          : pkg.beneficios;
+
+        return (
+          <div
+            class={`relative flex flex-col bg-white rounded-2xl p-8 flex-1 max-w-sm mx-auto md:mx-0 ${
+              pkg.destacado
+                ? 'border-2 border-primary shadow-xl md:scale-105'
+                : 'border border-primary/20 shadow-sm'
+            }`}
+          >
+            <!-- Badge "Más elegido" -->
+            {pkg.destacado && (
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span class="bg-primary text-white text-xs font-body font-bold px-4 py-1 rounded-full tracking-widest">
+                  {t(lang, 'packages.badge')}
+                </span>
+              </div>
+            )}
+
+            <h3 class="font-heading text-2xl text-primary text-center mb-2 mt-2">
+              {packageName}
+            </h3>
+
+            <!-- Precio -->
+            <div class="text-center mb-6">
+              <span class="font-body font-bold text-3xl text-primary">S/ {pkg.precio_sol}</span>
+              <span class="font-body text-sm text-primary/50 ml-2">(~${pkg.precio_usd} USD)</span>
             </div>
-          )}
 
-          <h3 class="font-heading text-2xl text-primary text-center mb-2 mt-2">
-            {pkg.nombre}
-          </h3>
+            <!-- Beneficios -->
+            <ul class="space-y-3 mb-8 flex-1">
+              {benefits.map((b) => (
+                <li class="flex items-start gap-2 font-body text-sm text-primary/80">
+                  <span class="text-primary font-bold mt-0.5">✓</span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
 
-          <!-- Precio -->
-          <div class="text-center mb-6">
-            <span class="font-body font-bold text-3xl text-primary">S/ {pkg.precio_sol}</span>
-            <span class="font-body text-sm text-primary/50 ml-2">(~${pkg.precio_usd} USD)</span>
+            <!-- CTA: Shopify o WhatsApp -->
+            <div class="text-center mt-auto space-y-2">
+              {pkg.shopify_enabled && pkg.shopify_checkout_url ? (
+                <>
+                  <a
+                    href={pkg.shopify_checkout_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-primary hover:opacity-90 transition-all"
+                  >
+                    🛒 {lang === 'en' ? 'BUY ON SHOPIFY' : 'CONTRATAR EN SHOPIFY'}
+                  </a>
+                  <div class="pt-1">
+                    <WhatsAppLink
+                      message={`${t(lang, 'packages.wa_message_prefix')} ${packageName}`}
+                      text={lang === 'en' ? 'Or inquire on WhatsApp' : 'O coordinar por WhatsApp'}
+                      class="text-xs text-primary/70 underline hover:text-primary"
+                    />
+                  </div>
+                </>
+              ) : (
+                <WhatsAppLink
+                  message={`${t(lang, 'packages.wa_message_prefix')} ${packageName}`}
+                  text={t(lang, 'packages.cta')}
+                  class="font-body font-semibold text-sm text-primary tracking-widest"
+                />
+              )}
+            </div>
           </div>
-
-          <!-- Beneficios -->
-          <ul class="space-y-3 mb-8 flex-1">
-            {((lang === 'en' && pkg.beneficios_en) ? pkg.beneficios_en : pkg.beneficios).map((b) => (
-              <li class="flex items-start gap-2 font-body text-sm text-primary/80">
-                <span class="text-primary font-bold mt-0.5">✓</span>
-                <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-
-          <!-- CTA -->
-          <div class="text-center">
-            <WhatsAppLink
-              message={`${t(lang, 'packages.wa_message_prefix')} ${pkg.nombre}`}
-              text={t(lang, 'packages.cta')}
-              class="font-body font-semibold text-sm text-primary tracking-widest"
-            />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
 
     <!-- Texto ayuda al final -->

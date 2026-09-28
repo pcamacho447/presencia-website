@@ -342,24 +342,44 @@ try {
     function renderPaquetesForm(list) {
       const container = document.getElementById('paquetes-container');
       container.innerHTML = list.map((p, idx) => `
-        <div class="p-6 border border-primary/10 rounded-xl bg-secondary/30 space-y-4">
-          <div class="flex justify-between items-center">
-            <h3 class="font-heading text-xl font-bold text-primary">${p.nombre}</h3>
-            <label class="flex items-center space-x-2 text-sm cursor-pointer">
-              <input type="checkbox" name="destacado_${idx}" ${p.destacado ? 'checked' : ''} class="w-4 h-4 accent-primary">
-              <span class="font-semibold text-primary">Marcar como destacado ("Más elegido")</span>
-            </label>
+        <div class="p-6 border border-primary/10 rounded-2xl bg-secondary/30 space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div class="flex-1 w-full md:w-auto">
+              <label class="block text-xs font-bold mb-1 text-primary">Nombre del Paquete</label>
+              <input type="text" name="pkg_nombre_${idx}" value="${p.nombre || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm font-heading font-bold" required>
+            </div>
+            <div class="flex flex-wrap items-center gap-4 text-sm">
+              <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-primary/10">
+                <input type="checkbox" name="destacado_${idx}" ${p.destacado ? 'checked' : ''} class="w-4 h-4 accent-primary">
+                <span class="font-semibold text-primary text-xs">Destacado ("Más elegido")</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-primary/10">
+                <input type="checkbox" name="pkg_shopify_enabled_${idx}" ${p.shopify_enabled ? 'checked' : ''} class="w-4 h-4 accent-emerald-600">
+                <span class="font-semibold text-emerald-800 text-xs">Activar Shopify</span>
+              </label>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold mb-1">Precio Soles (S/)</label>
-              <input type="text" name="precio_sol_${idx}" value="${p.precio_sol || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+              <input type="text" name="precio_sol_${idx}" value="${p.precio_sol || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm bg-white" required>
             </div>
             <div>
               <label class="block text-xs font-bold mb-1">Precio Referencial (USD)</label>
-              <input type="text" name="precio_usd_${idx}" value="${p.precio_usd || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+              <input type="text" name="precio_usd_${idx}" value="${p.precio_usd || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm bg-white" required>
             </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold mb-1">Beneficios (un beneficio por línea)</label>
+            <textarea name="pkg_beneficios_${idx}" rows="4" class="w-full p-2.5 border border-primary/20 rounded-lg text-xs bg-white font-mono">${(p.beneficios || []).join('\n')}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold mb-1 text-stone-700">URL Checkout / Producto Shopify (opcional)</label>
+            <input type="url" placeholder="https://tu-tienda.myshopify.com/cart/..." name="pkg_shopify_url_${idx}" value="${p.shopify_checkout_url || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-xs bg-white">
+            <p class="text-[11px] text-stone-500 mt-1">Si activas Shopify, el botón principal del paquete en la web dirigirá a este enlace.</p>
           </div>
         </div>
       `).join('');
@@ -372,12 +392,21 @@ try {
       btn.disabled = true;
       msg.textContent = 'Guardando...';
 
-      const updated = currentPaquetes.map((p, idx) => ({
-        ...p,
-        destacado: e.target[`destacado_${idx}`].checked,
-        precio_sol: e.target[`precio_sol_${idx}`].value,
-        precio_usd: e.target[`precio_usd_${idx}`].value,
-      }));
+      const updated = currentPaquetes.map((p, idx) => {
+        const rawBeneficios = e.target[`pkg_beneficios_${idx}`].value || '';
+        const beneficios = rawBeneficios.split('\n').map(s => s.trim()).filter(Boolean);
+
+        return {
+          ...p,
+          nombre: e.target[`pkg_nombre_${idx}`].value,
+          destacado: e.target[`destacado_${idx}`].checked,
+          precio_sol: e.target[`precio_sol_${idx}`].value,
+          precio_usd: e.target[`precio_usd_${idx}`].value,
+          beneficios: beneficios,
+          shopify_enabled: e.target[`pkg_shopify_enabled_${idx}`].checked,
+          shopify_checkout_url: e.target[`pkg_shopify_url_${idx}`].value.trim(),
+        };
+      });
 
       try {
         const res = await fetch('/api/admin/config', {
@@ -388,6 +417,7 @@ try {
         if (res.ok) {
           msg.className = 'text-sm font-semibold text-emerald-700';
           msg.textContent = '¡Paquetes actualizados correctamente en Supabase!';
+          currentPaquetes = updated;
         } else {
           throw new Error();
         }
@@ -427,37 +457,52 @@ try {
     function renderCatalogoForm(list) {
       const container = document.getElementById('catalogo-container');
       container.innerHTML = list.map((c, idx) => `
-        <div class="p-6 border border-primary/10 rounded-xl bg-secondary/30 space-y-4">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-heading text-xl font-bold text-primary">${c.nombre_es}</h3>
-              <p class="text-xs text-primary/60">${c.flores_es}</p>
+        <div class="p-6 border border-primary/10 rounded-2xl bg-secondary/30 space-y-4">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div class="flex-1 w-full md:w-auto">
+              <label class="block text-xs font-bold mb-1 text-primary">Nombre del Arreglo Floral</label>
+              <input type="text" name="cat_nombre_es_${idx}" value="${c.nombre_es || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm font-heading font-bold" required>
             </div>
-            <div class="flex flex-col space-y-2 items-end">
-              <label class="flex items-center space-x-2 text-sm cursor-pointer">
+            <div class="flex flex-wrap items-center gap-3 text-sm">
+              <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-primary/10">
                 <input type="checkbox" name="cat_disponible_${idx}" ${c.disponible !== false ? 'checked' : ''} class="w-4 h-4 accent-primary">
-                <span class="font-semibold text-primary">Disponible Público</span>
+                <span class="font-semibold text-primary text-xs">Disponible</span>
               </label>
-              <label class="flex items-center space-x-2 text-sm cursor-pointer">
+              <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-primary/10">
                 <input type="checkbox" name="cat_destacado_${idx}" ${c.destacado ? 'checked' : ''} class="w-4 h-4 accent-primary">
-                <span class="font-semibold text-primary">Destacado (Top)</span>
+                <span class="font-semibold text-primary text-xs">Destacado (Top)</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-primary/10">
+                <input type="checkbox" name="cat_shopify_enabled_${idx}" ${c.shopify_enabled ? 'checked' : ''} class="w-4 h-4 accent-emerald-600">
+                <span class="font-semibold text-emerald-800 text-xs">Activar Shopify</span>
               </label>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label class="block text-xs font-bold mb-1">Flores / Descripción breve</label>
+            <input type="text" name="cat_flores_es_${idx}" value="${c.flores_es || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm bg-white" required>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-bold mb-1">Precio Soles (S/)</label>
-              <input type="number" step="0.01" name="cat_precio_sol_${idx}" value="${c.precio_sol || 0}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+              <input type="number" step="0.01" name="cat_precio_sol_${idx}" value="${c.precio_sol || 0}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm bg-white" required>
             </div>
             <div>
               <label class="block text-xs font-bold mb-1">Precio Dólares (USD)</label>
-              <input type="number" step="0.01" name="cat_precio_usd_${idx}" value="${c.precio_usd || 0}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+              <input type="number" step="0.01" name="cat_precio_usd_${idx}" value="${c.precio_usd || 0}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm bg-white" required>
             </div>
             <div>
               <label class="block text-xs font-bold mb-1">URL de Imagen</label>
-              <input type="text" name="cat_imagen_url_${idx}" value="${c.imagen_url || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm">
+              <input type="text" name="cat_imagen_url_${idx}" value="${c.imagen_url || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm bg-white">
             </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold mb-1 text-stone-700">URL Checkout / Producto Shopify (opcional)</label>
+            <input type="url" placeholder="https://tu-tienda.myshopify.com/products/..." name="cat_shopify_url_${idx}" value="${c.shopify_checkout_url || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-xs bg-white">
+            <p class="text-[11px] text-stone-500 mt-1">Si activas Shopify, el botón principal del arreglo en la web dirigirá a este enlace.</p>
           </div>
         </div>
       `).join('');
@@ -472,11 +517,15 @@ try {
 
       const updated = currentCatalogo.map((c, idx) => ({
         ...c,
+        nombre_es: e.target[`cat_nombre_es_${idx}`].value,
+        flores_es: e.target[`cat_flores_es_${idx}`].value,
         disponible: e.target[`cat_disponible_${idx}`].checked,
         destacado: e.target[`cat_destacado_${idx}`].checked,
         precio_sol: Number(e.target[`cat_precio_sol_${idx}`].value),
         precio_usd: Number(e.target[`cat_precio_usd_${idx}`].value),
         imagen_url: e.target[`cat_imagen_url_${idx}`].value,
+        shopify_enabled: e.target[`cat_shopify_enabled_${idx}`].checked,
+        shopify_checkout_url: e.target[`cat_shopify_url_${idx}`].value.trim(),
       }));
 
       try {

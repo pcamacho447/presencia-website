@@ -511,3 +511,52 @@ para editar precios, flores y visibilidad de cada arreglo.
 - **Then** se cargan los arreglos existentes desde `/api/admin/config?key=catalogo`
 - **And** puede modificar precios (PEN/USD), visibilidad y detalles
 - **And** al presionar "Guardar Catálogo", los cambios persisten en Supabase y se reflejan inmediatamente en la landing pública
+
+---
+
+## Epic 6: Sincronización Total Dinámica y Preparación E-commerce Shopify
+
+Como **dueño del negocio y administrador**,
+quiero que tanto los Paquetes como el Catálogo Floral sean 100% editables desde el panel de control y estén preparados para enlazar checkouts o botones de Shopify,
+para poder actualizar precios, nombres, beneficios y vender directamente online cuando activemos la tienda de Shopify.
+
+---
+
+### Story 6.1: Conexión Dinámica de Paquetes en Landing Page desde Supabase
+Como **visitante de la web**,
+quiero ver los precios y beneficios actualizados de los paquetes que el administrador configuró en el panel,
+para tener información certera y sincronizada.
+
+**Acceptance Criteria:**
+- **Given** el administrador actualiza precios o textos de paquetes en `/admin`
+- **When** un visitante accede a `/es/` o `/en/`
+- **Then** `<Packages.astro>` consume los datos de `site_config.paquetes` en Supabase (con fallback local)
+- **And** muestra los valores actualizados sin requerir un nuevo build o deploy de código
+
+---
+
+### Story 6.2: Editor Integral en Panel `/admin` (Catálogo y Paquetes)
+Como **administrador del sitio**,
+quiero poder editar todos los atributos de los arreglos y paquetes (nombres, precios en Soles y Dólares, beneficios, fotos y URL de compra de Shopify),
+para tener control total de la oferta comercial desde un solo lugar.
+
+**Acceptance Criteria:**
+- **Given** el administrador en `/admin`
+- **When** accede a "Catálogo Floral" o "Paquetes y Precios"
+- **Then** puede editar nombres, precios, fotos, beneficios y el campo opcional "URL de Checkout / Producto Shopify"
+- **And** puede activar o desactivar la opción "Habilitar compra directa por Shopify" por cada producto/paquete
+- **And** los cambios se guardan atómicamente en Supabase
+
+---
+
+### Story 6.3: Botón de Compra Shopify con Fallback a WhatsApp
+Como **cliente interesado en comprar o contratar**,
+quiero poder hacer clic en "Comprar Ahora" para pagar directamente por Shopify (si está habilitado) o "Consultar por WhatsApp",
+para tener una experiencia de compra rápida y sin fricción.
+
+**Acceptance Criteria:**
+- **Given** un arreglo o paquete con `shopify_enabled: true` y una URL válida
+- **When** el usuario visualiza la tarjeta en la landing
+- **Then** se muestra un botón destacado de compra directa hacia Shopify y un enlace secundario para consultas vía WhatsApp
+- **And** si no hay URL de Shopify configurada, el botón principal continúa siendo la coordinación por WhatsApp
+

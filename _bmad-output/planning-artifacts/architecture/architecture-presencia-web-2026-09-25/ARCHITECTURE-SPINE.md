@@ -208,3 +208,17 @@ flowchart LR
 - **Frontend:** Componente `src/components/Catalog.astro` renderizado de forma responsive justo después de "Cómo Funciona", con enlaces contextualizados de WhatsApp para cada modelo floral.
 - **Admin:** Nueva vista/pestaña en el panel nativo de administración para actualizar precios, textos y disponibilidad en tiempo real.
 
+---
+
+### AD-14: Arquitectura Unificada para Catálogo, Paquetes y Preparación Shopify E-commerce
+
+- **Decisión:** 
+  1. Conectar `<Packages.astro>` directamente a `site_config.paquetes` en Supabase con fallback local al YAML, logrando sincronización dinámica 100% en vivo entre el panel `/admin` y el landing público.
+  2. Extender los esquemas de `catalogo` y `paquetes` con soporte para integración e-commerce headless:
+     - `shopify_enabled: boolean` (activa la compra directa mediante checkout de Shopify).
+     - `shopify_checkout_url: string` (permalink de producto o checkout directo en Shopify).
+     - Fallback elegante a WhatsApp si `shopify_enabled` es falso o no hay URL.
+  3. Expandir la UI del panel de administración (`/admin`) para ofrecer edición completa de textos, precios en PEN/USD, lista de beneficios, URLs de Shopify y disponibilidad, tanto para el Catálogo Floral como para los Paquetes de Servicios.
+- **Justificación:** Prepara el negocio para vender directamente con pasarelas de pago de Shopify sin romper la experiencia actual de conversión por WhatsApp, manteniendo el control total desde un único panel administrativo.
+
+

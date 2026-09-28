@@ -63,8 +63,14 @@ development_status:
   4-3-activación-y-verificación-de-cloudflare-web-analytics: review
   epic-4-retrospective: optional
 
-  epic-5: in-progress
+  epic-5: done
   5-1-modelo-y-componente-visual-del-catálogo-floral: done
   5-2-pestaña-de-administración-del-catálogo-en-admin: done
   epic-5-retrospective: optional
+
+  epic-6: in-progress
+  6-1-conexión-dinámica-de-paquetes-en-landing-desde-supabase: done
+  6-2-editor-integral-en-panel-admin-catálogo-y-paquetes-con-shopify: done
+  6-3-botón-de-compra-shopify-con-fallback-a-whatsapp-en-frontend: done
+  epic-6-retrospective: optional
 
