@@ -1,0 +1,5 @@
+---
+export const prerender = false;
+Astro.response.headers.set('X-Astro-Reroute', 'no');
+return Astro.redirect('/admin');
+---

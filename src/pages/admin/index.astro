@@ -82,6 +82,13 @@ try {
       💐 Paquetes y Precios
     </button>
     <button
+      id="tab-btn-catalogo"
+      onclick="switchTab('catalogo')"
+      class="tab-btn bg-white text-primary border border-primary/20 px-5 py-2.5 rounded-xl text-sm font-semibold transition hover:bg-primary/5"
+    >
+      🌻 Catálogo Floral
+    </button>
+    <button
       id="tab-btn-sitio"
       onclick="switchTab('sitio')"
       class="tab-btn bg-white text-primary border border-primary/20 px-5 py-2.5 rounded-xl text-sm font-semibold transition hover:bg-primary/5"
@@ -175,6 +182,26 @@ try {
       </div>
     </section>
 
+    <!-- Pestaña: Catálogo Floral -->
+    <section id="tab-content-catalogo" class="tab-content hidden">
+      <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
+        <h2 class="font-heading text-2xl font-bold mb-4">Catálogo de Arreglos Florales</h2>
+        <p class="text-sm opacity-80 mb-6">Gestiona los precios, disponibilidad y visibilidad de los arreglos en el catálogo público.</p>
+        <div id="loading-catalogo" class="text-center py-8 opacity-70">Cargando catálogo desde Supabase...</div>
+        
+        <form id="catalogo-form" class="hidden space-y-8">
+          <div id="catalogo-container" class="space-y-6"></div>
+          
+          <div class="flex items-center justify-between pt-6 border-t border-primary/10">
+            <div id="msg-catalogo" class="text-sm font-semibold"></div>
+            <button type="submit" id="save-catalogo-btn" class="bg-primary text-white py-3 px-8 rounded-xl font-bold hover:opacity-90 transition shadow-sm">
+              Guardar Cambios del Catálogo
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
     <!-- Pestaña 3: Hero y Contenidos -->
     <section id="tab-content-sitio" class="tab-content hidden">
       <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-primary/10">
@@ -241,6 +268,9 @@ try {
 
       if (tabName === 'paquetes' && !window.paquetesLoaded) {
         loadPaquetes();
+      }
+      if (tabName === 'catalogo' && !window.catalogoLoaded) {
+        loadCatalogo();
       }
       if (tabName === 'sitio' && !window.sitioLoaded) {
         loadSitio();
@@ -321,6 +351,107 @@ try {
       } catch {
         msg.className = 'text-sm font-semibold text-red-600';
         msg.textContent = 'Error al guardar cambios.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Lógica Catálogo
+    let currentCatalogo = [];
+    async function loadCatalogo() {
+      const loading = document.getElementById('loading-catalogo');
+      const form = document.getElementById('catalogo-form');
+      try {
+        const res = await fetch('/api/admin/config?key=catalogo');
+        if (res.ok) {
+          const data = await res.json();
+          // Fallback en caso esté vacío, se podría manejar trayendo del API
+          currentCatalogo = Array.isArray(data) && data.length > 0 ? data : []; 
+          if (currentCatalogo.length === 0) {
+            loading.textContent = 'No hay arreglos en Supabase. Se mostrarán los de por defecto en la vista pública.';
+          } else {
+            renderCatalogoForm(currentCatalogo);
+            loading.classList.add('hidden');
+            form.classList.remove('hidden');
+            window.catalogoLoaded = true;
+          }
+        }
+      } catch {
+        loading.textContent = 'Error al cargar el catálogo.';
+      }
+    }
+
+    function renderCatalogoForm(list) {
+      const container = document.getElementById('catalogo-container');
+      container.innerHTML = list.map((c, idx) => `
+        <div class="p-6 border border-primary/10 rounded-xl bg-secondary/30 space-y-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-heading text-xl font-bold text-primary">${c.nombre_es}</h3>
+              <p class="text-xs text-primary/60">${c.flores_es}</p>
+            </div>
+            <div class="flex flex-col space-y-2 items-end">
+              <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                <input type="checkbox" name="cat_disponible_${idx}" ${c.disponible !== false ? 'checked' : ''} class="w-4 h-4 accent-primary">
+                <span class="font-semibold text-primary">Disponible Público</span>
+              </label>
+              <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                <input type="checkbox" name="cat_destacado_${idx}" ${c.destacado ? 'checked' : ''} class="w-4 h-4 accent-primary">
+                <span class="font-semibold text-primary">Destacado (Top)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div>
+              <label class="block text-xs font-bold mb-1">Precio Soles (S/)</label>
+              <input type="number" step="0.01" name="cat_precio_sol_${idx}" value="${c.precio_sol || 0}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1">Precio Dólares (USD)</label>
+              <input type="number" step="0.01" name="cat_precio_usd_${idx}" value="${c.precio_usd || 0}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1">URL de Imagen</label>
+              <input type="text" name="cat_imagen_url_${idx}" value="${c.imagen_url || ''}" class="w-full p-2.5 border border-primary/20 rounded-lg text-sm">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('catalogo-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('msg-catalogo');
+      const btn = document.getElementById('save-catalogo-btn');
+      btn.disabled = true;
+      msg.textContent = 'Guardando...';
+
+      const updated = currentCatalogo.map((c, idx) => ({
+        ...c,
+        disponible: e.target[`cat_disponible_${idx}`].checked,
+        destacado: e.target[`cat_destacado_${idx}`].checked,
+        precio_sol: Number(e.target[`cat_precio_sol_${idx}`].value),
+        precio_usd: Number(e.target[`cat_precio_usd_${idx}`].value),
+        imagen_url: e.target[`cat_imagen_url_${idx}`].value,
+      }));
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'catalogo', value: updated })
+        });
+        if (res.ok) {
+          msg.className = 'text-sm font-semibold text-emerald-700';
+          msg.textContent = '¡Catálogo actualizado correctamente en Supabase!';
+          currentCatalogo = updated;
+        } else {
+          throw new Error();
+        }
+      } catch {
+        msg.className = 'text-sm font-semibold text-red-600';
+        msg.textContent = 'Error al guardar catálogo.';
       } finally {
         btn.disabled = false;
       }
