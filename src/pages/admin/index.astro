@@ -3,6 +3,10 @@
 export const prerender = false;
 Astro.response.headers.set('X-Astro-Reroute', 'no');
 
+import { createClient } from '@supabase/supabase-js';
+import { createSupabaseServerClient } from '../../lib/supabase';
+import { getEnv } from '../../lib/env';
+
 interface Lead {
   nombre: string;
   whatsapp: string;
@@ -14,19 +18,55 @@ interface Lead {
 
 let leads: Lead[] = [];
 let loadError = false;
+let errorMessage = '';
 
 try {
-  const url = new URL('/api/admin/leads', Astro.url.origin);
-  const res = await fetch(url.toString(), {
-    headers: { cookie: Astro.request.headers.get('cookie') || '' },
-  });
-  if (res.ok) {
-    leads = await res.json();
+  const url = getEnv(Astro, 'SUPABASE_URL');
+  const serviceKey = getEnv(Astro, 'SUPABASE_SERVICE_ROLE_KEY');
+
+  if (url && serviceKey) {
+    const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
+    const { data, error } = await supabase
+      .from('leads')
+      .select('nombre, whatsapp, ciudad, paquete, fecha_deseada, created_at')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      leads = data;
+    } else if (error) {
+      console.error('Supabase query error (service_role):', error.message);
+      // Fallback a cliente autenticado
+      const authSb = createSupabaseServerClient(Astro);
+      const { data: authData, error: authError } = await authSb
+        .from('leads')
+        .select('nombre, whatsapp, ciudad, paquete, fecha_deseada, created_at')
+        .order('created_at', { ascending: false });
+      if (!authError && authData) {
+        leads = authData;
+      } else {
+        loadError = true;
+        errorMessage = error.message;
+      }
+    }
   } else {
-    loadError = true;
+    // Si no está serviceKey disponible, usar sesión autenticada directamente
+    const authSb = createSupabaseServerClient(Astro);
+    const { data: authData, error: authError } = await authSb
+      .from('leads')
+      .select('nombre, whatsapp, ciudad, paquete, fecha_deseada, created_at')
+      .order('created_at', { ascending: false });
+
+    if (!authError && authData) {
+      leads = authData;
+    } else {
+      loadError = true;
+      errorMessage = authError?.message || 'Falta configuración de Supabase';
+    }
   }
-} catch {
+} catch (err: any) {
+  console.error('Exception loading leads:', err);
   loadError = true;
+  errorMessage = err?.message || 'Error inesperado al conectar con Supabase';
 }
 ---
 <!DOCTYPE html>
@@ -110,7 +150,10 @@ try {
         </div>
 
         {loadError && (
-          <p class="text-center py-8 text-red-600 font-semibold">Error al cargar las solicitudes desde la base de datos.</p>
+          <div class="text-center py-8">
+            <p class="text-red-600 font-semibold mb-2">Error al cargar las solicitudes desde la base de datos.</p>
+            {errorMessage && <p class="text-xs text-red-500 font-mono bg-red-50 p-2 rounded max-w-lg mx-auto">{errorMessage}</p>}
+          </div>
         )}
 
         {!loadError && leads.length === 0 && (
