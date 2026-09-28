@@ -10,16 +10,17 @@ El sitio es una experiencia de una sola página (Landing Page) diseñada para ll
 1. **Header (Sticky)**
 2. **Hero** (Video real abarcando todo el viewport, Título emocional, Enlaces subrayados)
 3. **Cómo Funciona** (4 pasos del proceso en timeline horizontal)
-4. **Paquetes** (Esencial, Serenidad, Memoria Viva)
-5. **FAQ** (Dudas comunes resueltas)
-6. **Formulario + Suscripción** (Captura de leads secundaria)
-7. **Footer** (Legal y redes)
+4. **Catálogo de Arreglos Florales** (Muestrario de arreglos con fotos reales: lirios, girasoles, claveles, astromelias, rosas; precios en PEN/USD y CTA WhatsApp)
+5. **Paquetes** (Esencial, Serenidad, Memoria Viva)
+6. **FAQ** (Dudas comunes resueltas)
+7. **Formulario + Suscripción** (Captura de leads secundaria)
+8. **Footer** (Legal y redes)
 
 *(Secciones excluidas intencionalmente para la v1: Barra de Confianza (iconos), Portafolio extendido, Lista detallada de ciudades/cementerios, Testimonios, Fechas especiales, Checkout e-commerce).*
 
 # Voice and Tone
 
-- **Tú / ti** en contextos emocionales y de venta (Hero, Paquetes, Cómo Funciona, FAQ). *"Con tu decisión, nosotros llegamos por ti."*
+- **Tú / ti** en contextos emocionales y de venta (Hero, Catálogo, Paquetes, Cómo Funciona, FAQ). *"Con tu decisión, nosotros llegamos por ti."*
 - **Usted** en contextos legales o formales (Formulario de contacto, Términos y Condiciones).
 - El tono general es empático, cálido, directo y poético donde la emoción lo requiere. Nunca frío ni transaccional.
 
@@ -33,6 +34,12 @@ El sitio es una experiencia de una sola página (Landing Page) diseñada para ll
 - Reproducción automática (`autoplay`), silenciado (`muted`), en bucle (`loop`).
 - Sin controles de reproducción visibles.
 - Actúa como fondo vivo, abarcando todo el ancho y alto del viewport (`100vh`), aportando prueba social inmediata.
+
+**Catálogo de Arreglos Florales (Cards & Grid):**
+- Grid responsive (1 columna en móvil, 2 en tablet, 3 en desktop).
+- Cada tarjeta presenta fotografía de alta calidad, título del arreglo, combinación floral (Lirios, Girasoles, Claveles, Astromelias, Rosas), precio dual (`S/ ...` / `$ ... USD`).
+- Acción directa por WhatsApp: *"Hola, quisiera consultar disponibilidad y coordinar la entrega del arreglo: [Nombre del Arreglo]"*.
+- Sincronización dinámica: Los precios y arreglos provienen de la configuración en Supabase y pueden ser editados en `/admin/catalogo`.
 
 **Paquetes Cards:**
 - La tarjeta central ("SERENIDAD") debe destacarse visualmente (ej. una etiqueta de "Más elegido" o un borde sutil).

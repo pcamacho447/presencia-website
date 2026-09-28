@@ -185,3 +185,26 @@ flowchart LR
     F -->|Valida Sesión| J
     F -->|Permite SSR| H
 ```
+
+---
+
+### AD-13: Catálogo Dinámico de Arreglos Florales y Panel `/admin/catalogo`
+
+- **Decisión:** Almacenar el catálogo de arreglos florales en la tabla existente `site_config` bajo la clave `'catalogo'`.
+- **Estructura del item:**
+  ```json
+  {
+    "id": "lirios-paz",
+    "nombre_es": "Lágrima de Lirios Blancos",
+    "nombre_en": "White Lilies Teardrop",
+    "flores": "Lirios, rosas blancas y follaje fino",
+    "precio_sol": "220",
+    "precio_usd": "65",
+    "imagen_url": "/images/catalogo/lirios.jpg",
+    "disponible": true
+  }
+  ```
+- **Justificación:** Reutiliza el endpoint probado `/api/admin/config?key=catalogo` con autenticación segura vía Service Role Key. Cero migraciones DDL adicionales en PostgreSQL.
+- **Frontend:** Componente `src/components/Catalog.astro` renderizado de forma responsive justo después de "Cómo Funciona", con enlaces contextualizados de WhatsApp para cada modelo floral.
+- **Admin:** Nueva vista/pestaña en el panel nativo de administración para actualizar precios, textos y disponibilidad en tiempo real.
+

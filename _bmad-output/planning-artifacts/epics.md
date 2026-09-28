@@ -327,23 +327,23 @@ para sentir que es una empresa seria y encontrar el acceso al contacto siempre d
 
 ---
 
-### Story 2.7: Configuración Decap CMS para Edición de Contenido
+### Story 2.7: Configuración de Panel Admin Nativo (SSR)
 
 Como **dueño del negocio**,
-quiero acceder a un panel en `/admin` donde pueda editar precios, textos de paquetes y cambiar el video del Hero,
+quiero acceder a un panel en `/admin` donde pueda editar precios, textos de paquetes y cambiar la URL del video del Hero,
 para no depender del freelancer cada vez que necesite actualizar información básica del sitio.
 
 **Acceptance Criteria:**
 
 **Given** el dueño del negocio accede a `tusitio.com/admin`
-**When** se autentica con su cuenta de GitHub
-**Then** puede ver el panel de Decap CMS con las colecciones "Paquetes" y "Configuración del Sitio"
+**When** no está autenticado
+**Then** el middleware lo redirige a `/admin/login` para pedir un Magic Link de Supabase Auth
 
-**And** desde "Configuración del Sitio" puede editar: URL/archivo del video Hero, título del Hero, subtítulo del Hero
-**And** desde "Paquetes" puede editar por cada paquete: nombre, precio en S/, precio en USD, lista de beneficios
-**And** al guardar un cambio en Decap CMS, se realiza un commit automático al repositorio y Cloudflare Pages dispara un redeploy
-**And** la autenticación usa GitHub OAuth via un Cloudflare Worker dedicado — no usa Netlify Identity
-**And** desde la Media Library el dueño puede subir un nuevo `hero.mp4` (máx 50MB) que reemplaza el anterior
+**And** al ingresar su correo autorizado, recibe un link que lo autentica
+**And** el panel de administración usa Astro SSR (`export const prerender = false`)
+**And** existe una vista de "Configuración del Sitio" donde puede editar y guardar variables globales en Supabase (ej. URL del video Hero, título)
+**And** existe una vista de "Paquetes" donde puede editar por cada paquete: nombre, precio S/, precio USD, y beneficios
+**And** los cambios se persisten inmediatamente en la base de datos de Supabase sin requerir un nuevo deploy de Cloudflare Pages
 
 
 ---
@@ -400,14 +400,13 @@ para dar seguimiento a los interesados sin necesitar acceder directamente a Supa
 **Acceptance Criteria:**
 
 **Given** el administrador accede a `tusitio.com/admin/leads` sin estar autenticado
-**When** Cloudflare Access intercepta la petición
-**Then** muestra la pantalla de login (email OTP) — solo emails autorizados explícitamente pueden pasar
+**When** el Middleware de Astro intercepta la petición
+**Then** lo redirige a la pantalla de login (Magic Link de Supabase Auth)
 
 **And** una vez autenticado, la página muestra una tabla con todos los registros de `leads` ordenados por `created_at DESC`
 **And** la tabla muestra las columnas: Nombre, WhatsApp, Ciudad, Paquete, Fecha Deseada, Fecha de Solicitud
-**And** la ruta `/api/admin/leads` es un Cloudflare Worker que consulta Supabase con `service_role_key` y retorna JSON — la key nunca llega al browser
+**And** la tabla carga los datos renderizados por SSR desde Supabase de forma segura
 **And** si no hay leads aún, la tabla muestra: *"Aún no hay solicitudes registradas."*
-**And** Cloudflare Access tiene configurado el email del dueño del negocio como único acceso autorizado
 
 
 ---
@@ -469,3 +468,46 @@ para saber desde el primer día cuántas personas llegan, de qué países y cuá
 **And** el componente `<WhatsAppLink>` dispara correctamente el evento `whatsapp_click` al Cloudflare Web Analytics Beacon en todos los puntos de conversión: Header, Hero, Cómo Funciona, cada card de Paquetes, FAQ, FAB flotante
 **And** el dueño puede ver en el dashboard cuántos eventos `whatsapp_click` se generaron en las últimas 24 horas
 **And** el script de Cloudflare Web Analytics no usa cookies y es GDPR-compliant — no se necesita banner de cookies
+
+
+---
+
+## Epic 5: Catálogo de Arreglos Florales y Gestión en Panel
+
+Como **visitante interesado en rendir homenaje a un familiar**,
+quiero visualizar un catálogo de arreglos florales representativos (Lirios, Girasoles, Claveles, Astromelias, Rosas) con sus precios y flores incluidas justo después de entender el servicio,
+para elegir el arreglo floral ideal y consultar de inmediato por WhatsApp.
+
+Como **administrador del negocio**,
+quiero poder gestionar y actualizar los precios y la disponibilidad de los arreglos desde el panel de administración,
+para mantener las ofertas y precios siempre al día sin tocar código.
+
+---
+
+### Story 5.1: Modelo y Componente Visual del Catálogo Floral
+
+Como **visitante de la web**,
+quiero ver tarjetas atractivas de arreglos florales con fotografías, desglose de flores y precios en PEN y USD,
+para conocer las opciones disponibles antes de decidir el servicio.
+
+**Acceptance Criteria:**
+- **Given** el usuario navega en `/es/` o `/en/`
+- **When** pasa de la sección "¿Cómo Funciona?" hacia abajo
+- **Then** encuentra la sección de Catálogo de Arreglos Florales en un grid responsive (1 col móvil, 2 col tablet, 3 col desktop)
+- **And** cada tarjeta muestra foto, nombre del arreglo, tipo de flores (Lirios, Girasoles, Claveles, Astromelias, Rosas), precio dual (`S/` y `$ USD`) y enlace directo a WhatsApp
+- **And** al hacer clic en el botón de WhatsApp, el mensaje se abre pre-rellenado con el nombre exacto del arreglo
+
+---
+
+### Story 5.2: Pestaña de Administración del Catálogo en `/admin`
+
+Como **administrador del sitio**,
+quiero una pestaña dedicada al catálogo en el panel `/admin`,
+para editar precios, flores y visibilidad de cada arreglo.
+
+**Acceptance Criteria:**
+- **Given** el administrador ha iniciado sesión en `/admin`
+- **When** selecciona la pestaña "Catálogo"
+- **Then** se cargan los arreglos existentes desde `/api/admin/config?key=catalogo`
+- **And** puede modificar precios (PEN/USD), visibilidad y detalles
+- **And** al presionar "Guardar Catálogo", los cambios persisten en Supabase y se reflejan inmediatamente en la landing pública

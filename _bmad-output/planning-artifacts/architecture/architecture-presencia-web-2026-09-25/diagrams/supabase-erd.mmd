@@ -2,24 +2,23 @@ erDiagram
     LEADS {
         uuid id PK
         string nombre
-        string email
-        string telefono
-        string paquete_interes
-        string mensaje
+        string whatsapp
+        string ciudad
+        string paquete
+        date fecha_deseada
         timestamp created_at
     }
 
     SUBSCRIPTIONS {
         uuid id PK
-        string email
+        string email UK
         boolean active
         timestamp created_at
     }
 
-    SITE_CONTENT {
-        string key PK "ej: hero_video, paquete_basico_precio"
-        jsonb value "valor del contenido (texto, num, url)"
-        string language "es/en"
+    SITE_CONFIG {
+        string key PK "hero | paquetes | catalogo"
+        jsonb value "Configuracion JSON (precios, flores, textos, urls)"
         timestamp updated_at
     }
 

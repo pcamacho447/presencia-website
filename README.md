@@ -88,8 +88,8 @@ erDiagram
     }
 
     SITE_CONFIG {
-        string key PK "ej: hero, paquetes"
-        jsonb value "valor del contenido (texto, num, url)"
+        string key PK "ej: hero, paquetes, catalogo"
+        jsonb value "valor del contenido (precios, textos, flores, urls)"
         timestamp updated_at
     }
 ```

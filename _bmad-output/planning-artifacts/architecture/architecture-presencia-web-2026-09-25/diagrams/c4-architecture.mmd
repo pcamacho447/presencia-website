@@ -11,37 +11,39 @@ flowchart TD
         subgraph Workers ["Serverless API / SSR"]
             ApiContact["POST /api/contact"]
             ApiSubscribe["POST /api/subscribe"]
-            AdminRoutes["SSR /admin/*\n(Gestión y UI)"]
+            ApiConfig["GET / POST /api/admin/config\n(Hero, Paquetes, Catálogo)"]
+            AdminRoutes["SSR /admin/*\n(Leads, Paquetes, Sitio, Catálogo)"]
         end
         
         Analytics["Web Analytics (Eventos)"]
     end
 
     subgraph Supabase ["Supabase (Backend)"]
-        Auth["Supabase Auth (Magic Link)"]
+        Auth["Supabase Auth (Email / Password)"]
         
         subgraph Database ["PostgreSQL"]
             Leads["Tabla: leads"]
             Subs["Tabla: subscriptions"]
-            Content["Tabla: content (CMS)"]
+            Config["Tabla: site_config\n(hero, paquetes, catalogo)"]
         end
     end
 
     %% Relaciones de Visitantes
-    Visitor -->|Visita sitio web| Pages
+    Visitor -->|Navega landing y Catálogo| Pages
     Visitor -->|Envía formulario| ApiContact
     Visitor -->|Se suscribe| ApiSubscribe
-    Visitor -->|Clic WhatsApp| Analytics
+    Visitor -->|Consulta WhatsApp (Arreglo o Paquete)| Analytics
 
     %% Relaciones de Administrador
     AdminUser -->|Solicita acceso a panel| Middleware
     Middleware -->|Verifica Sesión| Auth
     Middleware -->|Redirige a login o permite acceso| AdminRoutes
-    AdminUser -->|Recibe Magic Link| Auth
+    AdminUser -->|Inicia sesión con credenciales| Auth
     
     %% API a BD
     ApiContact -->|INSERT| Leads
     ApiSubscribe -->|INSERT| Subs
+    AdminRoutes -->|Consulta/Actualiza| ApiConfig
+    ApiConfig -->|SELECT / UPSERT| Config
     AdminRoutes -->|CRUD| Leads
     AdminRoutes -->|CRUD| Subs
-    AdminRoutes -->|CRUD| Content

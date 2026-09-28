@@ -29,36 +29,42 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-25-2026 11:45
-last_updated: 09-25-2026 11:45
+last_updated: '2026-09-27'
 project: presencia-web
 project_key: NOKEY
 tracking_system: file-system
 story_location: C:\papx\presencia-web\_bmad-output\implementation-artifacts
 development_status:
-  epic-1: backlog
-  1-1-inicialización-del-proyecto-astro-con-cloudflare-y-tailwind: backlog
-  1-2-scaffold-de-internacionalización-i18n: backlog
-  1-3-configuración-de-supabase-y-tablas-de-base-de-datos: backlog
+  epic-1: done
+  1-1-inicialización-del-proyecto-astro-con-cloudflare-y-tailwind: done
+  1-2-scaffold-de-internacionalización-i18n: done
+  1-3-configuración-de-supabase-y-tablas-de-base-de-datos: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-componente-whatsapplink-y-header: backlog
-  2-2-sección-hero-video-full-viewport: backlog
-  2-3-sección-cómo-funciona-timeline-horizontal: backlog
-  2-4-sección-paquetes-3-cards-de-conversión: backlog
-  2-5-sección-faq-acordeón: backlog
-  2-6-footer-y-fab-whatsapp: backlog
-  2-7-configuración-decap-cms-para-edición-de-contenido: backlog
+  epic-2: in-progress
+  2-1-componente-whatsapplink-y-header: review
+  2-2-sección-hero-video-full-viewport: review
+  2-3-sección-cómo-funciona-timeline-horizontal: review
+  2-4-sección-paquetes-3-cards-de-conversión: review
+  2-5-sección-faq-acordeón: review
+  2-6-footer-y-fab-whatsapp: review
+  2-7-configuración-de-panel-admin-nativo-ssr: in-progress
   epic-2-retrospective: optional
 
-  epic-3: backlog
-  3-1-formulario-de-contacto-con-envío-a-supabase: backlog
-  3-2-bloque-de-suscripción-de-email: backlog
-  3-3-vista-protegida-de-leads-en-admin-leads: backlog
+  epic-3: in-progress
+  3-1-formulario-de-contacto-con-envío-a-supabase: review
+  3-2-bloque-de-suscripción-de-email: review
+  3-3-vista-protegida-de-leads-en-admin-leads: in-progress
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-traducción-completa-al-inglés-en-json: backlog
-  4-2-seo-meta-tags-hreflang-y-sitemap: backlog
-  4-3-activación-y-verificación-de-cloudflare-web-analytics: backlog
+  epic-4: in-progress
+  4-1-traducción-completa-al-inglés-en-json: review
+  4-2-seo-meta-tags-hreflang-y-sitemap: review
+  4-3-activación-y-verificación-de-cloudflare-web-analytics: review
   epic-4-retrospective: optional
+
+  epic-5: ready-for-dev
+  5-1-modelo-y-componente-visual-del-catálogo-floral: ready-for-dev
+  5-2-pestaña-de-administración-del-catálogo-en-admin: ready-for-dev
+  epic-5-retrospective: optional
+

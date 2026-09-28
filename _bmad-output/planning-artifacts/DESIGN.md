@@ -62,6 +62,13 @@ Flores en Paz / Siempre Presente comunica paz, cuidado, respeto y amor a distanc
 - Lista de checks (`✓`) para fácil escaneo.
 - Un solo enlace CTA al final (WhatsApp).
 
+**Cards (Catálogo de Arreglos Florales):**
+- Aspect ratio de imagen 4:3 o 1:1 con bordes suaves (`rounded-xl`), iluminación natural y flores reales.
+- Título en `Italiana` serif, subtítulo con desglose floral (lirios, rosas, girasoles, etc.) en `Raleway`.
+- Precios prominentes en formato dual: Soles (`S/ ...`) y USD (`$... USD`).
+- Badge de disponibilidad opcional.
+- Botón / enlace CTA de WhatsApp contextualizado al arreglo específico.
+
 **Accordion (FAQ):**
 - Minimalista, línea separadora inferior, icono `+` o flecha sutil.
 
