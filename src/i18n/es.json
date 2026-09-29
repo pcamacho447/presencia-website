@@ -156,7 +156,11 @@
     "error_general": "Hubo un error al registrar la reclamación. Por favor intente nuevamente."
   },
   "cookies": {
+    "banner_title": "Uso de cookies",
     "banner_text": "Utilizamos cookies esenciales y analíticas anónimas (Cloudflare) para mejorar tu experiencia. Puedes aceptarlas, rechazarlas o consultar nuestra Política de Cookies.",
+    "accept": "Aceptar todas",
+    "reject": "Solo necesarias",
+    "policy_link": "Ver política",
     "accept_all": "Aceptar todas",
     "reject_all": "Solo necesarias",
     "view_policy": "Ver política",

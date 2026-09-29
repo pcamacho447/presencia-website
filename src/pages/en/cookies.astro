@@ -1,0 +1,305 @@
+---
+import Base from '../../layouts/Base.astro';
+import Footer from '../../components/Footer.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+
+export const prerender = true;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Base
+  lang={lang}
+  title={t('cookies.page_title')}
+  description={t('cookies.page_desc')}
+  canonicalUrl={`${Astro.url.origin}/en/cookies`}
+  alternateEs={`${Astro.url.origin}/es/cookies`}
+  alternateEn={`${Astro.url.origin}/en/cookies`}
+>
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Navigation and header -->
+    <div class="flex items-center justify-between mb-8">
+      <a
+        href={`/${lang}/`}
+        class="inline-flex items-center text-sm font-semibold text-primary/70 hover:text-primary transition-colors"
+      >
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to home
+      </a>
+      <a
+        href="/es/cookies"
+        class="text-xs font-semibold uppercase tracking-wider text-primary/60 hover:text-primary px-2.5 py-1 rounded border border-primary/20 hover:border-primary/40 transition-colors"
+      >
+        Español
+      </a>
+    </div>
+
+    <header class="text-center mb-10">
+      <h1 class="font-heading text-3xl md:text-5xl text-primary mb-4">{t('cookies.title')}</h1>
+      <p class="font-body text-primary/80 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+        {t('cookies.subtitle')}
+      </p>
+    </header>
+
+    <!-- Interactive Cookie Preference Management Panel -->
+    <section class="mb-12 bg-white/90 p-6 md:p-8 rounded-xl border border-primary/20 shadow-sm space-y-4">
+      <div class="flex items-center gap-3">
+        <span class="p-2 bg-primary/10 text-primary rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+          </svg>
+        </span>
+        <h2 class="font-heading text-xl text-primary font-bold">Manage Your Cookie Preferences</h2>
+      </div>
+      <p class="font-body text-sm text-primary/80">
+        You can modify or revoke your consent regarding analytical cookies at any time. Strictly necessary technical cookies remain active to guarantee website functionality and security.
+      </p>
+      
+      <div class="p-4 bg-secondary/50 rounded-lg border border-primary/10">
+        <p class="font-body text-sm text-primary">
+          <strong class="font-semibold">Current status:</strong>{' '}
+          <span id="consent-status-display" class="font-semibold text-primary">Checking preferences...</span>
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <button
+          id="btn-accept-all"
+          type="button"
+          class="px-4 py-2.5 text-sm bg-primary text-secondary font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
+          {t('cookies.accept_all')}
+        </button>
+        <button
+          id="btn-reject-all"
+          type="button"
+          class="px-4 py-2.5 text-sm border border-primary/30 text-primary font-medium rounded-lg hover:bg-primary/10 transition-colors"
+        >
+          {t('cookies.reject_all')}
+        </button>
+        <button
+          id="btn-reset-consent"
+          type="button"
+          class="px-4 py-2.5 text-sm border border-amber-300 text-amber-800 bg-amber-50/60 font-medium rounded-lg hover:bg-amber-100/70 transition-colors"
+        >
+          {t('cookies.reset_preferences')}
+        </button>
+      </div>
+
+      <p id="consent-feedback" class="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg hidden transition-all"></p>
+    </section>
+
+    <!-- Legal and Informative Content -->
+    <article class="space-y-8 font-body text-primary/90 leading-relaxed text-sm md:text-base">
+      <!-- 1. What are cookies? -->
+      <section class="bg-white/70 p-6 rounded-xl border border-primary/10 space-y-3">
+        <h2 class="font-heading text-2xl text-primary font-bold">1. What are cookies?</h2>
+        <p>
+          Cookies are small data files stored on your device (computer, smartphone, or tablet) when visiting web pages. They help remember your browsing preferences, optimize technical site performance, and ensure secure data transmission.
+        </p>
+        <p>
+          At <strong>Flores en Paz</strong>, we also use local browser storage (<code class="bg-secondary px-1.5 py-0.5 rounded text-xs font-mono text-primary">localStorage</code>), which enables persistent and fast storage of your privacy selections directly on your device without sending unnecessary data to external servers on every HTTP request.
+        </p>
+      </section>
+
+      <!-- 2. Types of cookies used -->
+      <section class="bg-white/70 p-6 rounded-xl border border-primary/10 space-y-4">
+        <h2 class="font-heading text-2xl text-primary font-bold">2. Cookies and technologies used on this website</h2>
+        <p>
+          We classify the cookies and local storage technologies used on our site into specific categories:
+        </p>
+
+        <div class="space-y-4">
+          <div class="border-l-4 border-primary pl-4 py-1">
+            <h3 class="font-bold text-primary text-base">A. Technical and Security Cookies (Strictly Necessary)</h3>
+            <p class="text-sm mt-1 text-primary/80">
+              Essential for core operations and platform security. They enable fast content distribution through Cloudflare's edge network, protect against cyber attacks, and mitigate malicious automated traffic (DDoS). For authorized administrators, secure encrypted session tokens are managed via Supabase Auth.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-emerald-600 pl-4 py-1">
+            <h3 class="font-bold text-primary text-base">B. Anonymous Analytics (Cloudflare Web Analytics)</h3>
+            <p class="text-sm mt-1 text-primary/80">
+              We use Cloudflare Web Analytics to measure site performance in a privacy-first, anonymous manner. Unlike traditional advertising analytics platforms, Cloudflare <strong>does not</strong> use cross-site tracking cookies, <strong>does not</strong> collect full IP addresses, and <strong>does not</strong> create individual behavioral profiles.
+            </p>
+          </div>
+
+          <div class="border-l-4 border-amber-600 pl-4 py-1">
+            <h3 class="font-bold text-primary text-base">C. Consent Preferences (Local Storage)</h3>
+            <p class="text-sm mt-1 text-primary/80">
+              We record whether you accepted or declined optional analytics via the local storage key <code class="bg-secondary px-1.5 py-0.5 rounded text-xs font-mono text-primary">flores_cookie_consent_v1</code>. This record stays in your browser and prevents repeated banner prompts on subsequent visits.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Summary Table -->
+      <section class="bg-white/70 p-6 rounded-xl border border-primary/10 space-y-4">
+        <h2 class="font-heading text-2xl text-primary font-bold">3. Cookies and Storage Overview</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs md:text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-primary/20 text-primary uppercase font-bold tracking-wider text-[11px]">
+                <th class="py-2.5 px-3">Identifier</th>
+                <th class="py-2.5 px-3">Provider</th>
+                <th class="py-2.5 px-3">Type / Purpose</th>
+                <th class="py-2.5 px-3">Duration</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-primary/10 text-primary/80">
+              <tr>
+                <td class="py-2.5 px-3 font-mono text-xs">__cf_bm / cf_clearance</td>
+                <td class="py-2.5 px-3">Cloudflare</td>
+                <td class="py-2.5 px-3">Technical: bot mitigation and DDoS attack protection.</td>
+                <td class="py-2.5 px-3">Up to 1 year / Session</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-mono text-xs">flores_cookie_consent_v1</td>
+                <td class="py-2.5 px-3">First-party (Flores en Paz)</td>
+                <td class="py-2.5 px-3">Preference: stores user cookie consent choice.</td>
+                <td class="py-2.5 px-3">Persistent (localStorage)</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-mono text-xs">sb-*-auth-token</td>
+                <td class="py-2.5 px-3">Supabase</td>
+                <td class="py-2.5 px-3">Technical: administrator session authentication (admin panel only).</td>
+                <td class="py-2.5 px-3">Secure Session</td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-mono text-xs">Cloudflare Beacon</td>
+                <td class="py-2.5 px-3">Cloudflare</td>
+                <td class="py-2.5 px-3">Anonymous Analytics: aggregated loading time and traffic metrics.</td>
+                <td class="py-2.5 px-3">In-memory / No tracking cookies</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4. How to manage or disable cookies -->
+      <section class="bg-white/70 p-6 rounded-xl border border-primary/10 space-y-3">
+        <h2 class="font-heading text-2xl text-primary font-bold">4. How to configure or disable cookies in your browser</h2>
+        <p>
+          You can allow, block, or delete cookies installed on your device through your browser settings:
+        </p>
+        <ul class="list-disc list-inside space-y-1.5 pl-2 text-primary/80 text-sm">
+          <li><strong>Google Chrome:</strong> Settings &gt; Privacy and security &gt; Cookies and other site data.</li>
+          <li><strong>Mozilla Firefox:</strong> Settings &gt; Privacy &amp; Security &gt; Cookies and Site Data.</li>
+          <li><strong>Apple Safari:</strong> Preferences &gt; Privacy &gt; Block all cookies.</li>
+          <li><strong>Microsoft Edge:</strong> Settings &gt; Cookies and site permissions &gt; Cookies and site data.</li>
+        </ul>
+        <p class="text-xs text-primary/70 italic mt-2">
+          Please note that disabling strictly necessary cookies may impact certain essential features of the website.
+        </p>
+      </section>
+
+      <!-- 5. Updates and Contact -->
+      <section class="bg-white/70 p-6 rounded-xl border border-primary/10 space-y-3">
+        <h2 class="font-heading text-2xl text-primary font-bold">5. Policy updates and contact</h2>
+        <p>
+          <strong>Flores en Paz</strong> may update this Cookie Policy in accordance with regulatory or technical requirements. We invite you to check this page periodically.
+        </p>
+        <p class="text-xs text-primary/60">
+          Last updated: September 2026. Flores en Paz · Cemetery floral placement in Lima, Trujillo, and Arequipa.
+        </p>
+      </section>
+    </article>
+  </main>
+
+  <Footer lang={lang} />
+</Base>
+
+<script>
+  import { COOKIE_CONSENT_KEY, type CookiePreferences } from '../../types/cookies';
+
+  function setupPolicyControls() {
+    const display = document.getElementById('consent-status-display');
+    const feedback = document.getElementById('consent-feedback');
+    const btnAccept = document.getElementById('btn-accept-all');
+    const btnReject = document.getElementById('btn-reject-all');
+    const btnReset = document.getElementById('btn-reset-consent');
+
+    function updateStatus() {
+      if (!display) return;
+      const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (!stored) {
+        display.textContent = 'Not configured (cookie banner is currently active)';
+        display.className = 'font-semibold text-amber-700';
+      } else {
+        try {
+          const prefs: CookiePreferences = JSON.parse(stored);
+          if (prefs.status === 'accepted') {
+            display.textContent = 'Accepted (essential and analytical cookies active)';
+            display.className = 'font-semibold text-emerald-700';
+          } else {
+            display.textContent = 'Essential only (analytics disabled)';
+            display.className = 'font-semibold text-primary/70';
+          }
+        } catch {
+          display.textContent = 'Not configured';
+          display.className = 'font-semibold text-amber-700';
+        }
+      }
+    }
+
+    function showFeedbackMessage(msg: string) {
+      if (!feedback) return;
+      feedback.textContent = msg;
+      feedback.classList.remove('hidden');
+      setTimeout(() => {
+        feedback.classList.add('hidden');
+      }, 4000);
+    }
+
+    if (btnAccept && !btnAccept.dataset.bound) {
+      btnAccept.dataset.bound = 'true';
+      btnAccept.addEventListener('click', () => {
+        const prefs: CookiePreferences = {
+          status: 'accepted',
+          analytics: true,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(prefs));
+        window.dispatchEvent(new CustomEvent('cookie-consent-granted'));
+        updateStatus();
+        showFeedbackMessage('Preferences updated: You have accepted all cookies.');
+      });
+    }
+
+    if (btnReject && !btnReject.dataset.bound) {
+      btnReject.dataset.bound = 'true';
+      btnReject.addEventListener('click', () => {
+        const prefs: CookiePreferences = {
+          status: 'rejected',
+          analytics: false,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(prefs));
+        updateStatus();
+        showFeedbackMessage('Preferences updated: Limited to essential cookies only.');
+      });
+    }
+
+    if (btnReset && !btnReset.dataset.bound) {
+      btnReset.dataset.bound = 'true';
+      btnReset.addEventListener('click', () => {
+        localStorage.removeItem(COOKIE_CONSENT_KEY);
+        window.dispatchEvent(new CustomEvent('cookie-consent-reset'));
+        updateStatus();
+        showFeedbackMessage('Preferences successfully reset. The cookie banner is active again.');
+      });
+    }
+
+    updateStatus();
+  }
+
+  document.addEventListener('astro:page-load', setupPolicyControls);
+  if (document.readyState !== 'loading') {
+    setupPolicyControls();
+  } else {
+    document.addEventListener('DOMContentLoaded', setupPolicyControls);
+  }
+</script>

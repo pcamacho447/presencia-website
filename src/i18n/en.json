@@ -156,7 +156,11 @@
     "error_general": "There was an error registering your claim. Please try again."
   },
   "cookies": {
+    "banner_title": "Cookie Notice",
     "banner_text": "We use essential and anonymous analytics cookies (Cloudflare) to improve your experience. You can accept them, reject them, or review our Cookie Policy.",
+    "accept": "Accept all",
+    "reject": "Essential only",
+    "policy_link": "View policy",
     "accept_all": "Accept all",
     "reject_all": "Essential only",
     "view_policy": "View policy",

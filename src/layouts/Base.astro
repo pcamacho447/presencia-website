@@ -1,5 +1,6 @@
 ---
 // src/layouts/Base.astro
+import CookieBanner from '../components/CookieBanner.astro';
 interface Props {
   lang: string;
   title: string;
@@ -51,6 +52,7 @@ const {
   </head>
   <body class="font-body bg-secondary text-primary">
     <slot />
+    <CookieBanner />
   </body>
 </html>
 

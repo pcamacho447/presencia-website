@@ -16,4 +16,12 @@ describe('i18n Keys Integrity', () => {
     assert.ok(es.footer.cookies, 'es.footer debe tener enlace cookies');
     assert.ok(en.footer.cookies, 'en.footer debe tener enlace cookies');
   });
+
+  test('es.json y en.json contienen claves completas para cookie banner', () => {
+    const requiredKeys = ['banner_title', 'banner_text', 'accept', 'reject', 'policy_link'];
+    for (const key of requiredKeys) {
+      assert.ok(es.cookies[key], `es.cookies debe tener clave ${key}`);
+      assert.ok(en.cookies[key], `en.cookies debe tener clave ${key}`);
+    }
+  });
 });

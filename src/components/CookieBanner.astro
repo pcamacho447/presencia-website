@@ -1,0 +1,114 @@
+---
+import { getLangFromUrl, useTranslations } from '../i18n/utils';
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-primary text-secondary p-4 shadow-2xl transform translate-y-full transition-transform duration-500 z-50 font-sans hidden">
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="text-sm">
+      <p class="font-bold mb-1">{t('cookies.banner_title')}</p>
+      <p class="text-secondary/80">
+        {t('cookies.banner_text')}
+        <a href={`/${lang}/cookies`} class="underline text-accent hover:text-accent/80 ml-1">{t('cookies.policy_link')}</a>
+      </p>
+    </div>
+    <div class="flex shrink-0 gap-3">
+      <button id="cookie-reject" class="px-4 py-2 text-sm border border-secondary/30 rounded hover:bg-secondary/10 transition-colors">
+        {t('cookies.reject')}
+      </button>
+      <button id="cookie-accept" class="px-4 py-2 text-sm bg-accent text-primary font-bold rounded hover:bg-accent/90 transition-colors">
+        {t('cookies.accept')}
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Vanilla JS logic for cookies to prevent React hydration overhead
+  import { COOKIE_CONSENT_KEY, type CookiePreferences } from '../types/cookies';
+
+  function initCookieBanner() {
+    const banner = document.getElementById('cookie-banner');
+    const acceptBtn = document.getElementById('cookie-accept');
+    const rejectBtn = document.getElementById('cookie-reject');
+
+    if (!banner || !acceptBtn || !rejectBtn) return;
+
+    // Check existing consent
+    const stored = localStorage.getItem(COOKIE_CONSENT_KEY);
+    
+    if (!stored) {
+      // Show banner
+      banner.classList.remove('hidden');
+      // Small delay to allow CSS transition
+      setTimeout(() => {
+        banner.classList.remove('translate-y-full');
+      }, 100);
+    } else {
+      // Apply existing consent (e.g. enable analytics if accepted)
+      try {
+        const parsed = JSON.parse(stored);
+        applyConsent(parsed?.status === 'accepted');
+      } catch {
+        // If stored data was invalid, show banner
+        banner.classList.remove('hidden');
+        setTimeout(() => {
+          banner.classList.remove('translate-y-full');
+        }, 100);
+      }
+    }
+
+    const saveConsent = (status: 'accepted' | 'rejected') => {
+      const prefs: CookiePreferences = {
+        status,
+        analytics: status === 'accepted',
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(prefs));
+      
+      banner.classList.add('translate-y-full');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 500);
+
+      applyConsent(prefs.analytics);
+    };
+
+    if (!acceptBtn.dataset.bound) {
+      acceptBtn.dataset.bound = 'true';
+      acceptBtn.addEventListener('click', () => saveConsent('accepted'));
+    }
+    if (!rejectBtn.dataset.bound) {
+      rejectBtn.dataset.bound = 'true';
+      rejectBtn.addEventListener('click', () => saveConsent('rejected'));
+    }
+  }
+
+  function applyConsent(analyticsEnabled: boolean) {
+    if (analyticsEnabled) {
+      // Initialize analytics scripts here if any
+      window.dispatchEvent(new CustomEvent('cookie-consent-granted'));
+    }
+  }
+
+  // Also support resetting consent from the /cookies policy page
+  window.addEventListener('cookie-consent-reset', () => {
+    localStorage.removeItem(COOKIE_CONSENT_KEY);
+    const banner = document.getElementById('cookie-banner');
+    if (banner) {
+      banner.classList.remove('hidden');
+      setTimeout(() => {
+        banner.classList.remove('translate-y-full');
+      }, 100);
+    }
+  });
+
+  // Run on load and on Astro view transitions
+  document.addEventListener('astro:page-load', initCookieBanner);
+  if (document.readyState !== 'loading') {
+    initCookieBanner();
+  } else {
+    document.addEventListener('DOMContentLoaded', initCookieBanner);
+  }
+</script>
