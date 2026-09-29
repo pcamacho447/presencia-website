@@ -24,3 +24,7 @@ export function getLangFromUrl(url: URL): Locale {
   const [, lang] = url.pathname.split('/');
   return (lang in translations ? lang : 'es') as Locale;
 }
+
+export function useTranslations(locale: string) {
+  return (key: string) => t(locale, key);
+}

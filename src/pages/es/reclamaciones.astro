@@ -1,0 +1,553 @@
+---
+import Base from '../../layouts/Base.astro';
+import Footer from '../../components/Footer.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n/utils';
+
+export const prerender = true;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Base
+  lang={lang}
+  title={t('claims.page_title')}
+  description={t('claims.page_desc')}
+  canonicalUrl={`${Astro.url.origin}/es/reclamaciones`}
+  alternateEs={`${Astro.url.origin}/es/reclamaciones`}
+  alternateEn={`${Astro.url.origin}/en/reclamaciones`}
+>
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Navegación y encabezado -->
+    <div class="flex items-center justify-between mb-8">
+      <a
+        href={`/${lang}/`}
+        class="inline-flex items-center text-sm font-semibold text-primary/70 hover:text-primary transition-colors"
+      >
+        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Volver al inicio
+      </a>
+      <a
+        href="/en/reclamaciones"
+        class="text-xs font-semibold uppercase tracking-wider text-primary/60 hover:text-primary px-2.5 py-1 rounded border border-primary/20 hover:border-primary/40 transition-colors"
+      >
+        English
+      </a>
+    </div>
+
+    <header class="text-center mb-10">
+      <h1 class="font-heading text-3xl md:text-5xl text-primary mb-4">{t('claims.title')}</h1>
+      <p class="font-body text-primary/80 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+        {t('claims.subtitle')}
+      </p>
+      <div class="mt-6 p-4 bg-white/80 rounded-lg border border-primary/15 text-sm font-body text-left shadow-sm">
+        <p class="font-semibold text-primary mb-1">Información del Proveedor:</p>
+        <p><strong>Razón Comercial:</strong> Flores en Paz / Siempre Presente</p>
+        <p><strong>RUC:</strong> 20601234567</p>
+        <p><strong>Dirección:</strong> Av. Principal 123, Lima, Perú</p>
+        <p class="text-xs text-primary/60 mt-1">{t('claims.provider_info')}</p>
+      </div>
+    </header>
+
+    <!-- Mensaje de éxito tras registrar la reclamación -->
+    <div
+      id="claim-success"
+      class="hidden bg-white border border-primary/20 p-8 rounded-lg mb-8 text-center font-body shadow-md"
+    >
+      <div class="w-16 h-16 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h2 class="font-heading text-2xl md:text-3xl text-primary mb-2 font-bold">{t('claims.success_title')}</h2>
+      <p class="text-primary/80 mb-6 text-sm md:text-base max-w-xl mx-auto">{t('claims.success_desc')}</p>
+      
+      <div class="bg-secondary/60 p-6 rounded-lg border border-primary/10 max-w-md mx-auto mb-6 text-left space-y-3">
+        <div>
+          <span class="block text-xs uppercase tracking-wider text-primary/60 font-semibold">{t('claims.claim_code')}</span>
+          <span id="claim-code" class="text-2xl md:text-3xl font-heading font-bold text-primary tracking-wider"></span>
+        </div>
+        <div>
+          <span class="block text-xs uppercase tracking-wider text-primary/60 font-semibold">{t('claims.registration_date')}</span>
+          <span id="claim-date" class="text-sm font-medium text-primary"></span>
+        </div>
+        <div>
+          <span class="block text-xs uppercase tracking-wider text-primary/60 font-semibold">{t('claims.response_deadline')}</span>
+          <span id="claim-deadline" class="text-sm font-bold text-primary"></span>
+          <p class="text-xs text-primary/70 mt-0.5">{t('claims.response_deadline_notice')}</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <button
+          type="button"
+          id="print-receipt-btn"
+          class="px-6 py-2.5 bg-primary text-secondary rounded font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
+        >
+          {t('claims.print_receipt')}
+        </button>
+        <button
+          type="button"
+          onclick="window.location.reload()"
+          class="px-6 py-2.5 border border-primary/30 text-primary rounded font-semibold text-sm hover:bg-primary/5 transition-colors"
+        >
+          {t('claims.new_claim')}
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje de errores globales del formulario -->
+    <div id="form-error" class="hidden p-4 mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-body"></div>
+
+    <form id="claim-form" class="space-y-8 font-body">
+      <!-- 1. Identificación del Consumidor -->
+      <section class="bg-white p-6 md:p-8 rounded-lg shadow-sm border border-primary/10">
+        <h2 class="text-xl font-heading font-bold text-primary mb-4 border-b border-primary/10 pb-3">
+          {t('claims.consumer_title')}
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.person_type')} *</label>
+            <select
+              name="tipo_persona"
+              id="tipo_persona"
+              required
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            >
+              <option value="natural">{t('claims.person_natural')}</option>
+              <option value="juridica">{t('claims.person_juridica')}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.full_name')} *</label>
+            <input
+              type="text"
+              name="nombre_completo"
+              required
+              minlength="3"
+              placeholder="Juan Pérez / Mi Empresa S.A.C."
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.doc_type')} *</label>
+            <select
+              name="tipo_documento"
+              required
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            >
+              <option value="DNI">DNI</option>
+              <option value="CE">Carnet de Extranjería</option>
+              <option value="Pasaporte">Pasaporte</option>
+              <option value="RUC">RUC</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.doc_number')} *</label>
+            <input
+              type="text"
+              name="numero_documento"
+              required
+              minlength="5"
+              placeholder="Número de documento de identidad"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.phone')} *</label>
+            <input
+              type="tel"
+              name="telefono"
+              required
+              minlength="6"
+              placeholder="+51 987654321"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.email')} *</label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="tu@correo.com"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.address')} *</label>
+            <input
+              type="text"
+              name="direccion"
+              required
+              minlength="5"
+              placeholder="Calle, avenida, número y urbanización"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.city')} *</label>
+            <select
+              name="ciudad"
+              required
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            >
+              <option value="">Seleccione una ciudad</option>
+              <option value="Lima">Lima</option>
+              <option value="Arequipa">Arequipa</option>
+              <option value="Trujillo">Trujillo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-primary/10">
+          <label class="flex items-center space-x-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              name="es_menor"
+              id="es_menor_checkbox"
+              class="w-4 h-4 rounded text-primary border-primary/30 focus:ring-primary"
+            />
+            <span class="text-sm font-medium text-primary">{t('claims.is_minor')}</span>
+          </label>
+        </div>
+
+        <div
+          id="apoderado_fields"
+          class="hidden mt-4 p-5 bg-secondary/50 rounded-lg border border-primary/10 grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <div class="md:col-span-2 text-xs md:text-sm text-primary/80 mb-1">
+            Por favor, ingrese los datos de su padre, madre o apoderado legal según normativa de INDECOPI:
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-primary uppercase tracking-wider mb-1">
+              {t('claims.guardian_name')} *
+            </label>
+            <input
+              type="text"
+              name="apoderado_nombre"
+              id="apoderado_nombre"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-primary uppercase tracking-wider mb-1">
+              {t('claims.guardian_doc')} *
+            </label>
+            <input
+              type="text"
+              name="apoderado_documento"
+              id="apoderado_documento"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Identificación del Bien Contratado -->
+      <section class="bg-white p-6 md:p-8 rounded-lg shadow-sm border border-primary/10">
+        <h2 class="text-xl font-heading font-bold text-primary mb-4 border-b border-primary/10 pb-3">
+          {t('claims.good_title')}
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-sm font-medium text-primary mb-2">{t('claims.good_type')} *</label>
+            <div class="flex items-center space-x-6">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="tipo_bien"
+                  value="producto"
+                  required
+                  class="w-4 h-4 text-primary border-primary/30 focus:ring-primary"
+                />
+                <span class="text-sm font-medium text-primary">{t('claims.product')} (Arreglo floral)</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="tipo_bien"
+                  value="servicio"
+                  required
+                  class="w-4 h-4 text-primary border-primary/30 focus:ring-primary"
+                />
+                <span class="text-sm font-medium text-primary">{t('claims.service')} (Colocación/Mantenimiento)</span>
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.claimed_amount')}</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              name="monto_reclamado"
+              placeholder="0.00"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.good_desc')} *</label>
+            <input
+              type="text"
+              name="descripcion_bien"
+              required
+              minlength="5"
+              placeholder="Ej: Arreglo floral Modelo Esencial para Cementerio de Lima con fecha 25/09/2026"
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Detalle de Reclamación -->
+      <section class="bg-white p-6 md:p-8 rounded-lg shadow-sm border border-primary/10">
+        <h2 class="text-xl font-heading font-bold text-primary mb-4 border-b border-primary/10 pb-3">
+          {t('claims.claim_title')}
+        </h2>
+        
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-primary mb-2">{t('claims.claim_type')} *</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+            <label class="flex items-start p-3 rounded-lg border border-primary/15 hover:border-primary/40 cursor-pointer transition-all">
+              <input
+                type="radio"
+                name="tipo_reclamacion"
+                value="reclamo"
+                required
+                class="w-4 h-4 text-primary border-primary/30 focus:ring-primary mt-1"
+              />
+              <div class="ml-3">
+                <span class="font-bold text-sm text-primary block">{t('claims.reclamo')}</span>
+                <span class="text-xs text-primary/70 block mt-0.5">{t('claims.reclamo_def')}</span>
+              </div>
+            </label>
+            <label class="flex items-start p-3 rounded-lg border border-primary/15 hover:border-primary/40 cursor-pointer transition-all">
+              <input
+                type="radio"
+                name="tipo_reclamacion"
+                value="queja"
+                required
+                class="w-4 h-4 text-primary border-primary/30 focus:ring-primary mt-1"
+              />
+              <div class="ml-3">
+                <span class="font-bold text-sm text-primary block">{t('claims.queja')}</span>
+                <span class="text-xs text-primary/70 block mt-0.5">{t('claims.queja_def')}</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.detail')} *</label>
+            <textarea
+              name="detalle"
+              required
+              minlength="10"
+              rows="4"
+              placeholder="Explique los hechos ocurridos de manera clara y detallada..."
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all resize-y"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-primary mb-1.5">{t('claims.pedido')} *</label>
+            <textarea
+              name="pedido"
+              required
+              minlength="5"
+              rows="3"
+              placeholder="Indique con claridad qué solución o respuesta solicita a la empresa..."
+              class="w-full p-2.5 bg-white border border-primary/20 rounded focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all resize-y"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Declaración Jurada y Términos -->
+      <section class="bg-white p-6 md:p-8 rounded-lg shadow-sm border border-primary/10">
+        <label class="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            name="terminos"
+            required
+            class="w-4 h-4 mt-1 rounded text-primary border-primary/30 focus:ring-primary"
+          />
+          <span class="text-xs md:text-sm text-primary/80 leading-relaxed">
+            {t('claims.terms')}
+          </span>
+        </label>
+      </section>
+
+      <div class="flex justify-center pt-2">
+        <button
+          type="submit"
+          id="submit-btn"
+          class="px-10 py-3.5 bg-primary text-secondary font-bold tracking-widest uppercase text-sm rounded hover:bg-primary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {t('claims.submit')}
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <Footer lang={lang} />
+</Base>
+
+<script>
+  import { validateClaimPayload } from '../../lib/claims-validation';
+
+  const form = document.getElementById('claim-form') as HTMLFormElement | null;
+  const esMenorCheckbox = document.getElementById('es_menor_checkbox') as HTMLInputElement | null;
+  const apoderadoFields = document.getElementById('apoderado_fields');
+  const apoderadoNombre = document.getElementById('apoderado_nombre') as HTMLInputElement | null;
+  const apoderadoDoc = document.getElementById('apoderado_documento') as HTMLInputElement | null;
+  
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const errorDiv = document.getElementById('form-error');
+  const successDiv = document.getElementById('claim-success');
+  const printBtn = document.getElementById('print-receipt-btn');
+
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  if (esMenorCheckbox && apoderadoFields) {
+    esMenorCheckbox.addEventListener('change', (e) => {
+      const isChecked = (e.target as HTMLInputElement).checked;
+      if (isChecked) {
+        apoderadoFields.classList.remove('hidden');
+        apoderadoFields.classList.add('grid');
+        if (apoderadoNombre) apoderadoNombre.required = true;
+        if (apoderadoDoc) apoderadoDoc.required = true;
+      } else {
+        apoderadoFields.classList.add('hidden');
+        apoderadoFields.classList.remove('grid');
+        if (apoderadoNombre) apoderadoNombre.required = false;
+        if (apoderadoDoc) apoderadoDoc.required = false;
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (errorDiv) {
+        errorDiv.classList.add('hidden');
+        errorDiv.innerHTML = '';
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+      }
+
+      const formData = new FormData(form);
+      const esMenor = formData.get('es_menor') === 'on';
+      const montoVal = formData.get('monto_reclamado');
+      
+      const payload: any = {
+        tipo_persona: formData.get('tipo_persona') || 'natural',
+        nombre_completo: (formData.get('nombre_completo') as string || '').trim(),
+        tipo_documento: formData.get('tipo_documento'),
+        numero_documento: (formData.get('numero_documento') as string || '').trim(),
+        telefono: (formData.get('telefono') as string || '').trim(),
+        email: (formData.get('email') as string || '').trim(),
+        direccion: (formData.get('direccion') as string || '').trim(),
+        ciudad: formData.get('ciudad'),
+        es_menor: esMenor,
+        apoderado_nombre: esMenor ? (formData.get('apoderado_nombre') as string || '').trim() : undefined,
+        apoderado_documento: esMenor ? (formData.get('apoderado_documento') as string || '').trim() : undefined,
+        tipo_bien: formData.get('tipo_bien'),
+        monto_reclamado: montoVal && !isNaN(Number(montoVal)) ? Number(montoVal) : undefined,
+        descripcion_bien: (formData.get('descripcion_bien') as string || '').trim(),
+        tipo_reclamacion: formData.get('tipo_reclamacion'),
+        detalle: (formData.get('detalle') as string || '').trim(),
+        pedido: (formData.get('pedido') as string || '').trim(),
+        terminos: formData.get('terminos') === 'on'
+      };
+
+      const validation = validateClaimPayload(payload);
+      
+      if (!validation.isValid) {
+        if (errorDiv) {
+          errorDiv.classList.remove('hidden');
+          errorDiv.innerHTML = `<ul class="list-disc pl-5 space-y-1">${validation.errors.map((err) => `<li>${err}</li>`).join('')}</ul>`;
+          errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enviar Reclamación';
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/reclamaciones', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const detailMsg = data.details && Array.isArray(data.details) ? data.details.join(' ') : null;
+          throw new Error(detailMsg || data.error || 'Ocurrió un error al procesar la reclamación.');
+        }
+
+        form.classList.add('hidden');
+        if (successDiv) {
+          successDiv.classList.remove('hidden');
+        }
+
+        const codeEl = document.getElementById('claim-code');
+        if (codeEl) codeEl.textContent = data.codigo;
+
+        const dateEl = document.getElementById('claim-date');
+        if (dateEl && data.fecha_registro) {
+          const regDate = new Date(data.fecha_registro);
+          dateEl.textContent = regDate.toLocaleDateString('es-PE', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        }
+        
+        const deadlineEl = document.getElementById('claim-deadline');
+        if (deadlineEl && data.fecha_limite) {
+          const limitDate = new Date(data.fecha_limite);
+          deadlineEl.textContent = limitDate.toLocaleDateString('es-PE', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (err: any) {
+        if (errorDiv) {
+          errorDiv.classList.remove('hidden');
+          errorDiv.textContent = err.message || 'Error de conexión. Por favor intente nuevamente.';
+          errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enviar Reclamación';
+        }
+      }
+    });
+  }
+</script>
