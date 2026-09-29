@@ -206,3 +206,10 @@ El sitio incluye un panel de control nativo, protegido por Astro Middleware y Su
 ---
 
 Â© 2026 Flores en Paz â€” Todos los derechos reservados.
+
+## ?? Aspectos Legales: Libro de Reclamaciones y Cookies
+
+Conforme a la normativa del INDECOPI y la Ley de Protección de Datos Personales, la web integra:
+- **Formulario de Reclamos Bilingüe:** Generación atómica de códigos correlativos legales vía base de datos y cálculo de plazo de respuesta (15 días hábiles).
+- **Banner de Consentimiento:** Implementación zero-JS-framework (Vanilla JS) con persistencia en localStorage.
+- **Panel Administrativo:** Consulta de todos los reclamos vigentes con alertas visuales (ámbar/rojo) para prevenir el incumplimiento de plazos legales.
