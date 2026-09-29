@@ -30,6 +30,13 @@ CREATE TABLE IF NOT EXISTS public.reclamaciones (
 
 ALTER TABLE public.reclamaciones ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can select reclamaciones" ON public.reclamaciones;
+CREATE POLICY "Authenticated users can select reclamaciones"
+  ON public.reclamaciones
+  FOR SELECT
+  TO authenticated
+  USING (true);
+
 -- Política: Service role puede hacer todo (acceso exclusivo para backend / API endpoints)
 DROP POLICY IF EXISTS "Service role full access on reclamaciones" ON public.reclamaciones;
 CREATE POLICY "Service role full access on reclamaciones"

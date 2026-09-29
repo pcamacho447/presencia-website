@@ -1,6 +1,6 @@
 ---
 status: final
-updated: 2026-09-25
+updated: 2026-09-28
 project: presencia-web
 altitude: feature
 scope: Landing page completa — Flores en Paz / Siempre Presente
@@ -11,7 +11,7 @@ scope: Landing page completa — Flores en Paz / Siempre Presente
 ## Paradigm
 
 **Content-first static site with server-side edge functions.**
-Astro genera HTML puro en build time. Todo lo que puede ser estático, lo es. Las únicas funciones server-side son los endpoints de formulario y la autenticación de Decap CMS, ejecutadas como Cloudflare Workers al borde de la red — no en un servidor central.
+Astro genera HTML puro en build time. Todo lo que puede ser estático, lo es. Las únicas funciones server-side son los endpoints de formulario, la sincronización con Shopify, y la autenticación del panel de administración nativo, ejecutadas como Cloudflare Workers al borde de la red.
 
 ---
 
@@ -24,86 +24,92 @@ Ninguno — spine raíz, sin padre.
 ## Architecture Decisions
 
 ### AD-1 — Framework: Astro + adapter Cloudflare
-**Binds:** Todo componente UI es un Astro Component (`.astro`). Los Astro Islands (interactividad puntual) se limitan al acordeón FAQ y el evento WhatsApp click tracker.
-**Prevents:** Usar React/Vue/Svelte como framework principal. Shipping de JavaScript innecesario al browser.
+**Binds:** Todo componente UI es un Astro Component (`.astro`). Los Astro Islands se limitan al acordeón FAQ y trackeo de eventos.
+**Prevents:** Usar React/Vue/Svelte como framework principal. Shipping de JavaScript innecesario.
 **Rule:** `output: 'hybrid'` en `astro.config.mjs` — páginas estáticas por defecto, rutas API como Workers.
 
 ### AD-2 — Hosting: Cloudflare Pages + Workers
-**Binds:** Deploy automático desde rama `main` en GitHub. Preview deployments en PRs automáticamente. Variables de entorno (Supabase keys) solo en el panel de Cloudflare — nunca en el repo.
-**Prevents:** Hosting en Vercel, Netlify, o servidor VPS propio.
+**Binds:** Deploy automático desde rama `main` en GitHub. Variables de entorno en el panel de Cloudflare.
 **Rule:** Un solo proyecto en Cloudflare Pages cubre el sitio estático y los Workers via Astro API routes.
 
-### AD-3 — CMS: Decap CMS
-**Binds:** Todo contenido editable (precio Esencial, precio Serenidad, precio Memoria Viva, URL video hero, textos de paquetes) vive en archivos YAML bajo `src/content/`. Decap CMS los edita vía panel `/admin`.
-**Prevents:** Edición directa de archivos `.astro` por el usuario del negocio.
-**Rule:** El freelancer implementa un Cloudflare Worker dedicado para el OAuth callback de GitHub (auth de Decap). Sin este Worker, el panel `/admin` no funciona en Cloudflare Pages.
+### AD-3 — CMS: Reemplazado por Panel Admin Nativo
+*(Derogado a favor de AD-10)*
 
 ### AD-4 — Base de datos: Supabase (proyecto nuevo)
-**Binds:** Proyecto Supabase exclusivo para presencia-web (separado de otros proyectos). Tablas iniciales: `leads` y `subscriptions`. RLS activo en ambas tablas. El service role key de Supabase vive solo en variables de entorno de Cloudflare.
-**Prevents:** Usar el proyecto Supabase de otro producto. Exponer keys de Supabase al browser/cliente.
-**Rule:** El único canal de escritura a Supabase es el Cloudflare Worker del formulario — nunca el cliente JavaScript.
+**Binds:** Proyecto Supabase exclusivo. Tablas: `leads`, `subscriptions`, y configuración dinámica en `site_config`.
+**Rule:** El único canal de escritura a Supabase son los Cloudflare Workers.
 
 ### AD-5 — Flujo de leads
-**Binds:** `POST /api/contact` → Worker → Supabase `leads`. `POST /api/subscribe` → Worker → Supabase `subscriptions`. Los leads se consultan directamente desde el dashboard de Supabase.
-**Prevents:** Notificaciones de email o WhatsApp en v1. UI de admin custom para leads.
-**Rule:** Sin dependencias de servicios de email (Resend, SendGrid) en v1.
+**Binds:** `POST /api/contact` → Worker → Supabase `leads`.
 
 ### AD-6 — Internacionalización
-**Binds:** Astro i18n nativo. Rutas `/es/` (default) y `/en/`. Todo texto visible del sitio se define en archivos de traducción `src/i18n/es.json` y `src/i18n/en.json`. Tags `hreflang` generados automáticamente.
-**Prevents:** Toggle de idioma via JavaScript sin rutas reales. Texto hardcodeado en componentes `.astro`.
-**Rule:** El raíz `/` redirige a `/es/`. Todo componente accede a textos via helper `t('key')`.
+**Binds:** Astro i18n nativo. Rutas `/es/` y `/en/`.
 
 ### AD-7 — Analytics y conversión
-**Binds:** Cloudflare Web Analytics (sin cookies, GDPR-compliant) activado en el panel de Cloudflare. Evento JavaScript `whatsapp_click` disparado en cada click a cualquier enlace WhatsApp del sitio.
-**Prevents:** Google Analytics, Meta Pixel, o cualquier tracker con cookies en v1.
-**Rule:** Todos los enlaces WhatsApp usan un componente `<WhatsAppLink>` centralizado que dispara el evento — no se implementa el tracker inline en cada sección.
+**Binds:** Cloudflare Web Analytics y trackeo del evento `whatsapp_click`.
 
 ### AD-8 — Video Hero
-**Binds:** Archivo de video en `/public/videos/hero.mp4`. Referenciado por ruta relativa fija. Cloudflare Pages lo sirve via CDN global. Para swap: nuevo archivo subido via Decap CMS media library → commit automático → redeploy (~60 segundos).
-**Prevents:** Dependencia de YouTube, Vimeo, o Cloudflare R2/Stream.
-**Rule:** El video nunca supera 50MB para mantener tiempos de build y deploy aceptables.
+**Binds:** Archivo de video en `/public/videos/hero.mp4` o provisto vía Supabase `site_config`.
 
 ### AD-9 — Tipografía
-**Binds:** `Italiana` para todos los headings (`h1`–`h4`). `Raleway` para body, párrafos, labels y CTAs. Ambas fuentes cargadas desde Google Fonts con `font-display: swap`.
-**Prevents:** Usar otras fuentes sin aprobación explícita.
+**Binds:** `Italiana` (headings), `Raleway` (body).
 
-### AD-10 — Panel Admin Nativo en Astro + Supabase (reemplaza Decap CMS)
-**Binds:** Reemplazar la dependencia de Decap CMS y GitHub OAuth por un Panel de Administración 100% nativo dentro del proyecto en `/admin`, renderizado dinámicamente con Astro SSR (`export const prerender = false`) y respaldado por Supabase + Cloudflare Workers.
-- Sub-rutas: `/admin/leads` (gestión de solicitudes), `/admin/paquetes` (edición de paquetes y precios S/ y USD), `/admin/sitio` (textos bilingües y URL del video hero).
-**Prevents:** Dependencias de autenticación externa de GitHub OAuth, fallos de conexión en cliente y librerías externas de CMS de terceros.
-**Rule:** Endpoints `/api/admin/*` usan `SUPABASE_SERVICE_ROLE_KEY` del lado del servidor. Protección de acceso administrada nativamente o vía Cloudflare Access (Zero Trust).
+### AD-10 — Panel Admin Nativo en Astro + Supabase
+**Binds:** Panel de Administración 100% nativo dentro del proyecto en `/admin`.
+**Rule:** Rutas protegidas que modifican configuraciones usan `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### AD-11 — Autenticación del Panel Admin: Supabase Auth + Magic Link
-
-**Binds:** El acceso a `/admin` y todas las sub-rutas bajo `/admin/*` y `/api/admin/*` requieren una sesión válida de Supabase Auth. El flujo de autenticación usa **Magic Link** enviado por email — sin contraseñas que almacenar ni gestionar.
-- La sesión se gestiona mediante una cookie `HttpOnly; Secure; SameSite=Lax` de corta duración, renovada silenciosamente por el cliente Supabase SSR.
-- Un middleware de Astro (`src/middleware.ts`) intercepta todas las peticiones a `/admin/*` y `/api/admin/*`, valida la sesión via `supabase.auth.getSession()`, y redirige a `/admin/login` si no existe sesión válida.
-- La página `/admin/login` presenta un formulario de Magic Link. No existe registro público — el email autorizado se configura directamente en el panel de Supabase Auth.
-- Los endpoints `/api/admin/*` devuelven HTTP 401 si no hay sesión válida, como segunda línea de defensa.
-
-**Prevents:** Acceso anónimo al panel de administración en producción. Contraseñas hardcodeadas. Cookies sin flags de seguridad.
-
-**Rule:**
-- Package: `@supabase/ssr` para gestión de sesión server-side en Cloudflare Workers.
-- `SUPABASE_URL` y `SUPABASE_ANON_KEY` son los únicos secrets necesarios para Auth.
-- `SUPABASE_SERVICE_ROLE_KEY` continúa siendo exclusivo de los endpoints de escritura a datos.
-- En desarrollo local se puede desactivar con `PUBLIC_SKIP_AUTH=true` en `.env.local`.
+**Binds:** Acceso protegido por Supabase Auth (correo sin contraseña / Magic Link). Middleware bloquea accesos no autorizados a `/admin/*` y `/api/admin/*`.
 
 ### AD-12 — Security Headers HTTP
+**Binds:** Cabeceras inyectadas vía `public/_headers`.
 
-**Binds:** El proyecto incluye un archivo `public/_headers` (Cloudflare Pages format) que inyecta cabeceras de seguridad HTTP en todas las respuestas.
+### AD-13 — Catálogo Dinámico de Arreglos Florales
+**Binds:** Datos guardados en `site_config` bajo la clave `'catalogo'`.
 
-Cabeceras mínimas requeridas:
-- `X-Frame-Options: DENY`
-- `X-Content-Type-Options: nosniff`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
-- `Content-Security-Policy` con allowlist explícita de fuentes permitidas.
-- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+### AD-14 — Arquitectura Unificada y Preparación E-commerce
+**Binds:** `<Packages.astro>` y `<Catalog.astro>` leen dinámicamente de Supabase con fallback local. Se define estructura para e-commerce headless.
 
-**Prevents:** Clickjacking, MIME sniffing, ataques XSS, framing externo del sitio.
+### AD-15 — Integración Shopify Headless y Flujo Post-Venta WhatsApp
+**Binds:** 
+- El inventario real proviene de Shopify (Presencia-Web Store).
+- Un script de sincronización (`/api/admin/shopify-sync`) y local scripts consumen el CSV o la Storefront/Admin API para mantener los productos sincronizados en `site_config` de Supabase.
+- Al hacer click en "Comprar" desde el sitio, los usuarios son enviados directamente al checkout de Shopify usando la URL `https://[shopify-domain]/cart/[variant_id]:1`.
+- **Post-venta vital:** Tras finalizar el pago en Shopify, la confirmación definitiva e información del lugar de envío (cementoerio/iglesia) se centraliza **obligatoriamente por WhatsApp**.
+- **Cobertura geográfica:** Se solicita explícitamente la ciudad destino: Trujillo, Lima, o Arequipa en el pre-fill de WhatsApp ("📍 Trujillo · Lima · Arequipa").
+**Prevents:** Depender de una tienda Shopify con frontend Liquid. La web se mantiene en Astro por performance extrema (Hybrid render), usando Shopify solo como checkout/headless CMS.
+**Rule:** Ambos CTAs (Comprar vía Shopify y Consultar vía WhatsApp) mantienen igualdad de jerarquía visual en componentes como `<Catalog.astro>`, ya que la conversión final a nivel operativo ocurre conectando la orden con WhatsApp para la logística en las 3 ciudades.
 
-**Rule:** Las cabeceras se definen en `public/_headers` siguiendo la sintaxis de Cloudflare Pages. HSTS solo aplica en producción.
+---
+
+## Diagrama del Flujo Completo (Mermaid)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Cliente
+    participant Web as Presencia Web (Astro)
+    participant Shopify as Checkout (Shopify)
+    participant Whatsapp as WhatsApp Business
+    participant Admin as Admin Panel (Supabase)
+
+    Note over Web,Admin: Sincronización de Catálogo Headless
+    Admin-->>Web: Sincroniza Productos/Precios (site_config)
+    
+    Note over Cliente,Whatsapp: Flujo de Compra
+    Cliente->>Web: Visualiza arreglos (Trujillo/Lima/Arequipa)
+    
+    alt Compra Directa con Tarjeta
+        Cliente->>Web: Clic en "Comprar en Tienda"
+        Web->>Shopify: Redirige a /cart/[variant_id]:1
+        Shopify-->>Cliente: Proceso de Pago Seguro
+        Cliente->>Whatsapp: Envía Recibo y Ciudad destino (Confirma logística)
+    else Consulta / Pago Manual
+        Cliente->>Web: Clic en "Consultar por WhatsApp"
+        Web->>Whatsapp: Abre App con Pre-fill (Arreglo + Ciudad)
+        Whatsapp-->>Cliente: Atención Humana y Pago alternativo
+    end
+```
 
 ---
 
@@ -111,114 +117,7 @@ Cabeceras mínimas requeridas:
 
 | Tema | Condición para revisitar |
 |---|---|
-| Notificaciones de leads (email/WhatsApp) | Cuando el volumen de leads supere la capacidad de revisión manual en Supabase |
-| Cloudflare R2 para assets de media | Si el repo supera 200MB por videos acumulados |
-| Checkout online / pagos | Cuando se decida integrar pago sin pasar por WhatsApp |
-| Testimonios, Fechas Especiales, Portafolio | Iteración v2 con contenido real acumulado |
-| Staging environment separado | Si hay un equipo de más de una persona haciendo cambios |
-
----
-
-## Seed (estado inicial del código — dueño: el código una vez creado)
-
-```
-presencia-web/
-├── src/
-│   ├── components/        # Astro components (Header, Hero, Paquetes, FAQ…)
-│   │   └── WhatsAppLink.astro  # Componente centralizado con tracker
-│   ├── content/           # YAML gestionado por Decap CMS
-│   │   ├── config.ts
-│   │   ├── paquetes.yaml
-│   │   └── site.yaml      # video URL, textos hero
-│   ├── i18n/
-│   │   ├── es.json
-│   │   └── en.json
-│   ├── pages/
-│   │   ├── es/index.astro
-│   │   ├── en/index.astro
-│   │   └── api/
-│   │       ├── contact.ts     # Worker: guarda lead en Supabase
-│   │       └── subscribe.ts   # Worker: guarda email en Supabase
-│   └── layouts/
-│       └── Base.astro
-├── public/
-│   ├── admin/             # Decap CMS config.yml
-│   └── videos/
-│       └── hero.mp4
-└── astro.config.mjs       # output: 'hybrid', adapter: cloudflare, i18n config
-```
-
----
-
-## Diagrama
-
-```mermaid
-flowchart LR
-    subgraph Browser["Browser (móvil / desktop)"]
-        A[Astro HTML estático]
-        B[WhatsAppLink click → evento CF Analytics]
-        K[Panel Admin SSR]
-    end
-
-    subgraph CF["Cloudflare (Astro Hybrid)"]
-        C[Pages CDN\n/es/ /en/ + assets]
-        D[Worker: /api/contact]
-        E[Worker: /api/subscribe]
-        F[Astro Middleware\nAuth Guard]
-        G[Web Analytics]
-    end
-
-    subgraph Services["Servicios externos (Supabase)"]
-        H[Base de Datos\nleads + subscriptions + content]
-        J[Supabase Auth\nMagic Link]
-    end
-
-    Browser -->|GET estático| C
-    B -->|event| G
-    A -->|POST form| D
-    A -->|POST email| E
-    D -->|INSERT| H
-    E -->|INSERT| H
-    
-    %% Flujo de Administrador
-    K -->|Solicita /admin/*| F
-    F -->|Valida Sesión| J
-    F -->|Permite SSR| H
-```
-
----
-
-### AD-13: Catálogo Dinámico de Arreglos Florales y Panel `/admin/catalogo`
-
-- **Decisión:** Almacenar el catálogo de arreglos florales en la tabla existente `site_config` bajo la clave `'catalogo'`.
-- **Estructura del item:**
-  ```json
-  {
-    "id": "lirios-paz",
-    "nombre_es": "Lágrima de Lirios Blancos",
-    "nombre_en": "White Lilies Teardrop",
-    "flores": "Lirios, rosas blancas y follaje fino",
-    "precio_sol": "220",
-    "precio_usd": "65",
-    "imagen_url": "/images/catalogo/lirios.jpg",
-    "disponible": true
-  }
-  ```
-- **Justificación:** Reutiliza el endpoint probado `/api/admin/config?key=catalogo` con autenticación segura vía Service Role Key. Cero migraciones DDL adicionales en PostgreSQL.
-- **Frontend:** Componente `src/components/Catalog.astro` renderizado de forma responsive justo después de "Cómo Funciona", con enlaces contextualizados de WhatsApp para cada modelo floral.
-- **Admin:** Nueva vista/pestaña en el panel nativo de administración para actualizar precios, textos y disponibilidad en tiempo real.
-
----
-
-### AD-14: Arquitectura Unificada para Catálogo, Paquetes y Preparación Shopify E-commerce
-
-- **Decisión:** 
-  1. Conectar `<Packages.astro>` directamente a `site_config.paquetes` en Supabase con fallback local al YAML, logrando sincronización dinámica 100% en vivo entre el panel `/admin` y el landing público.
-  2. Extender los esquemas de `catalogo` y `paquetes` con soporte para integración e-commerce headless:
-     - `shopify_enabled: boolean` (activa la compra directa mediante checkout de Shopify).
-     - `shopify_checkout_url: string` (permalink de producto o checkout directo en Shopify).
-     - Fallback elegante a WhatsApp si `shopify_enabled` es falso o no hay URL.
-  3. Expandir la UI del panel de administración (`/admin`) para ofrecer edición completa de textos, precios en PEN/USD, lista de beneficios, URLs de Shopify y disponibilidad, tanto para el Catálogo Floral como para los Paquetes de Servicios.
-- **Justificación:** Prepara el negocio para vender directamente con pasarelas de pago de Shopify sin romper la experiencia actual de conversión por WhatsApp, manteniendo el control total desde un único panel administrativo.
-
+| Notificaciones de leads (email/WhatsApp) automáticas | Cuando el volumen de leads supere la capacidad de revisión manual |
+| Cloudflare R2 para assets de media | Si el repo supera 200MB por videos |
+| Automatización de Webhooks Shopify -> WhatsApp | Iteración futura para enviar mensajes automáticamente tras pago en Shopify |
 

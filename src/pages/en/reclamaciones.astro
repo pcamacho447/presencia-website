@@ -80,6 +80,18 @@ const t = useTranslations(lang);
         </div>
       </div>
 
+      <div id="claim-receipt-data" class="text-left bg-white p-6 rounded-lg border border-primary/20 max-w-2xl mx-auto mb-6 text-sm shadow-sm hidden print:block">
+        <h3 class="font-bold text-lg mb-4 border-b border-primary/10 pb-2">Claim Summary</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <p><strong>Name/Company:</strong> <br/><span id="receipt-name"></span></p>
+          <p><strong>Document:</strong> <br/><span id="receipt-doc"></span></p>
+          <p><strong>Phone:</strong> <br/><span id="receipt-phone"></span></p>
+          <p><strong>Email:</strong> <br/><span id="receipt-email"></span></p>
+        </div>
+        <p class="mt-2"><strong>Details:</strong></p>
+        <p id="receipt-details" class="p-3 bg-secondary/30 border border-primary/10 rounded mt-1 whitespace-pre-wrap"></p>
+      </div>
+
       <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
         <button
           type="button"
@@ -534,6 +546,20 @@ const t = useTranslations(lang);
             day: 'numeric'
           });
         }
+
+        const receiptData = document.getElementById('claim-receipt-data');
+        if (receiptData) receiptData.classList.remove('hidden');
+
+        const receiptName = document.getElementById('receipt-name');
+        if (receiptName) receiptName.textContent = payload.nombre_completo;
+        const receiptDoc = document.getElementById('receipt-doc');
+        if (receiptDoc) receiptDoc.textContent = `${payload.tipo_documento} ${payload.numero_documento}`;
+        const receiptPhone = document.getElementById('receipt-phone');
+        if (receiptPhone) receiptPhone.textContent = payload.telefono;
+        const receiptEmail = document.getElementById('receipt-email');
+        if (receiptEmail) receiptEmail.textContent = payload.email;
+        const receiptDetails = document.getElementById('receipt-details');
+        if (receiptDetails) receiptDetails.textContent = payload.detalle;
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
 

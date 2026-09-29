@@ -30,3 +30,4 @@ pnpm-debug.log*
 
 # Local diagnostic scripts
 scripts/
+/.superpowers/

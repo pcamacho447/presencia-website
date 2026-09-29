@@ -17,8 +17,8 @@ export function validateClaimPayload(data: Partial<ClaimPayload>): ValidationRes
     errors.push('El nombre completo o razón social es requerido (mínimo 3 caracteres).');
   }
 
-  if (!data.tipo_documento) {
-    errors.push('El tipo de documento es requerido.');
+  if (!data.tipo_documento || !['DNI', 'CE', 'Pasaporte', 'RUC'].includes(data.tipo_documento)) {
+    errors.push('El tipo de documento es requerido y debe ser válido.');
   }
 
   if (!data.numero_documento || data.numero_documento.trim().length < 5) {

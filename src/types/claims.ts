@@ -30,7 +30,7 @@ export interface ClaimRecord extends ClaimPayload {
   id: string;
   codigo: string;
   fecha_registro: string;
-  fecha_limite_respuesta: string;
+  fecha_limite: string;
   estado: EstadoReclamacion;
   observaciones_proveedor?: string;
 }

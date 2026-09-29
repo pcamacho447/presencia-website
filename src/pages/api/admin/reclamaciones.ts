@@ -20,7 +20,7 @@ export const GET: APIRoute = async (context) => {
     const { data, error } = await supabase
       .from('reclamaciones')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('fecha_registro', { ascending: false });
 
     if (error) {
       return new Response(JSON.stringify({ error: 'Error al consultar reclamaciones' }), {
