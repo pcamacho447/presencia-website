@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
-import { getEnv } from '../../lib/env';
-import { validateClaimPayload, generateClaimCode } from '../../lib/claims-validation';
-import type { ClaimPayload } from '../../types/claims';
+import { getEnv } from '../../lib/env.ts';
+import { validateClaimPayload, generateClaimCode } from '../../lib/claims-validation.ts';
+import type { ClaimPayload } from '../../types/claims.ts';
 
 export const prerender = false;
 
@@ -27,20 +27,28 @@ export const POST: APIRoute = async (context) => {
   const url = getEnv(context, 'SUPABASE_URL');
   const serviceKey = getEnv(context, 'SUPABASE_SERVICE_ROLE_KEY');
 
-  if (!url || !serviceKey) {
+  const supabase =
+    (context?.locals as any)?.supabase ||
+    (url && serviceKey ? createClient(url, serviceKey, { auth: { persistSession: false } }) : null);
+
+  if (!supabase) {
     return new Response(JSON.stringify({ error: 'Configuración incompleta del servidor' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
-
-  // Obtener siguiente correlativo
-  const { count } = await supabase.from('reclamaciones').select('*', { count: 'exact', head: true });
-  const nextSeq = (count || 0) + 1;
-  const year = new Date().getFullYear();
-  const codigo = generateClaimCode(nextSeq, year);
+  // Obtener siguiente correlativo atómicamente desde la secuencia de base de datos
+  let codigo: string;
+  const { data: rpcCode, error: rpcError } = await supabase.rpc('get_next_reclamacion_code');
+  if (!rpcError && rpcCode) {
+    codigo = String(rpcCode);
+  } else {
+    // Fallback con conteo si la función RPC no estuviera disponible
+    const { count } = await supabase.from('reclamaciones').select('*', { count: 'exact', head: true });
+    const nextSeq = (count || 0) + 1;
+    codigo = generateClaimCode(nextSeq);
+  }
 
   const now = new Date();
   const fechaLimite = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);

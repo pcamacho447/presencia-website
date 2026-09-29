@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS public.reclamaciones (
 
 ALTER TABLE public.reclamaciones ENABLE ROW LEVEL SECURITY;
 
--- Política: Service role puede hacer todo
+-- Política: Service role puede hacer todo (acceso exclusivo para backend / API endpoints)
 DROP POLICY IF EXISTS "Service role full access on reclamaciones" ON public.reclamaciones;
 CREATE POLICY "Service role full access on reclamaciones"
   ON public.reclamaciones
@@ -39,10 +39,24 @@ CREATE POLICY "Service role full access on reclamaciones"
   USING (true)
   WITH CHECK (true);
 
--- Política: Insert público mediante anon key (o vía Cloudflare Worker con service role)
+-- Eliminada política de inserción pública anónima por seguridad (reclamaciones se procesan vía /api/reclamaciones con service_role)
 DROP POLICY IF EXISTS "Allow public insert on reclamaciones" ON public.reclamaciones;
-CREATE POLICY "Allow public insert on reclamaciones"
-  ON public.reclamaciones
-  FOR INSERT
-  TO anon, authenticated
-  WITH CHECK (true);
+
+-- Función segura para generar el siguiente código correlativo usando la secuencia atómica
+CREATE OR REPLACE FUNCTION public.get_next_reclamacion_code()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  next_seq BIGINT;
+  cur_year INT;
+BEGIN
+  SELECT nextval('reclamaciones_seq') INTO next_seq;
+  cur_year := EXTRACT(YEAR FROM CURRENT_DATE)::INT;
+  RETURN 'REC-' || cur_year || '-' || LPAD(next_seq::TEXT, 5, '0');
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.get_next_reclamacion_code() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_next_reclamacion_code() TO service_role;
