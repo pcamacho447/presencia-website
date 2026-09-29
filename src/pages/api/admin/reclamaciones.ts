@@ -23,7 +23,7 @@ export const GET: APIRoute = async (context) => {
       .order('fecha_registro', { ascending: false });
 
     if (error) {
-      return new Response(JSON.stringify({ error: 'Error al consultar reclamaciones' }), {
+      return new Response(JSON.stringify({ error: 'Error al consultar reclamaciones: ' + error.message }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
