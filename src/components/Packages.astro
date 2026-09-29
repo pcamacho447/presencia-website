@@ -100,7 +100,7 @@ const paquetes = [...paquetesList].sort((a, b) => {
             </ul>
 
             <!-- CTA: Shopify o WhatsApp -->
-            <div class="text-center mt-auto space-y-2">
+            <div class="text-center mt-auto space-y-2.5">
               {pkg.shopify_enabled && pkg.shopify_checkout_url ? (
                 <>
                   <a
@@ -109,22 +109,31 @@ const paquetes = [...paquetesList].sort((a, b) => {
                     rel="noopener noreferrer"
                     class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-primary hover:opacity-90 transition-all"
                   >
-                    🛒 {lang === 'en' ? 'BUY ON SHOPIFY' : 'CONTRATAR EN SHOPIFY'}
+                    <span class="mr-2 text-base">🛒</span> {lang === 'en' ? 'BUY ON SHOPIFY' : 'CONTRATAR EN SHOPIFY'}
                   </a>
-                  <div class="pt-1">
-                    <WhatsAppLink
-                      message={`${t(lang, 'packages.wa_message_prefix')} ${packageName}`}
-                      text={lang === 'en' ? 'Or inquire on WhatsApp' : 'O coordinar por WhatsApp'}
-                      class="text-xs text-primary/70 underline hover:text-primary"
-                    />
-                  </div>
+                  <WhatsAppLink
+                    message={`${t(lang, 'packages.wa_message_prefix')} ${packageName}. Ciudad (Trujillo / Lima / Arequipa):`}
+                    text={lang === 'en' ? 'COORDINATE ON WHATSAPP' : 'COORDINAR POR WHATSAPP'}
+                    class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-whatsapp hover:brightness-105 transition-all no-underline"
+                  />
+                  <p class="text-[11px] text-center text-primary/70 font-raleway pt-1 leading-tight">
+                    📍 <strong>Trujillo · Lima · Arequipa</strong><br/>
+                    {lang === 'en' 
+                      ? 'Confirm payment with receipt & coordinate service details' 
+                      : 'Confirma tu pago con el comprobante y coordina los detalles'}
+                  </p>
                 </>
               ) : (
-                <WhatsAppLink
-                  message={`${t(lang, 'packages.wa_message_prefix')} ${packageName}`}
-                  text={t(lang, 'packages.cta')}
-                  class="font-body font-semibold text-sm text-primary tracking-widest"
-                />
+                <div class="space-y-1.5">
+                  <WhatsAppLink
+                    message={`${t(lang, 'packages.wa_message_prefix')} ${packageName}. Ciudad (Trujillo / Lima / Arequipa):`}
+                    text={t(lang, 'packages.cta')}
+                    class="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-whatsapp hover:brightness-105 transition-all no-underline"
+                  />
+                  <p class="text-[11px] text-center text-primary/70 font-raleway pt-1 leading-tight">
+                    📍 <strong>Trujillo · Lima · Arequipa</strong>
+                  </p>
+                </div>
               )}
             </div>
           </div>
