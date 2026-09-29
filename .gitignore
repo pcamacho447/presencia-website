@@ -21,3 +21,12 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# Cloudflare Wrangler cache
+.wrangler/
+
+# Root screenshot images
+/*.png
+
+# Local diagnostic scripts
+scripts/
