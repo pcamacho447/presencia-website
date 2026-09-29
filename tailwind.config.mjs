@@ -9,7 +9,7 @@ export default {
         primary: '#2b4c3b',
         secondary: '#f5f3e9',
         whatsapp: '#25d366',
-        accent: '#ffffff',
+        accent: '#C5A880',
       },
       fontFamily: {
         heading: ['Italiana', ...defaultTheme.fontFamily.serif],
